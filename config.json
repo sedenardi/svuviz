@@ -1,0 +1,18 @@
+{
+  "mysql": {
+    "host": "",
+    "port": "",
+    "user": "",
+    "password": "",
+    "database": "",
+    "multipleStatements": "true"
+  },
+  "web": {
+    "port": "",
+    "folders": {
+      "layouts": "",
+      "partials": "",
+      "static": ""
+    }
+  }
+}
