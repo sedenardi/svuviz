@@ -40,11 +40,20 @@ var UrlBuilder = function() {
     };
   };
 
-  this.getCreditsUrl = function(id) {
+  this.getTitleCreditsUrl = function(id) {
     return {
       titleId: id,
       getUrl: function() {
         return baseURL + '/title/' + this.titleId + '/fullcredits';
+      }
+    };
+  };
+
+  this.getActorCreditsUrl = function(id) {
+    return {
+      actorId: id,
+      getUrl: function() {
+        return baseURL + '/name/' + this.actorId + '/';
       }
     };
   };

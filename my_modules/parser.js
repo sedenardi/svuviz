@@ -102,7 +102,7 @@ var Parser = function() {
     self.emit('parsed', seasonObj);
   };
 
-  this.parseCreditsPage = function(rawObj) {
+  this.parseTitleCreditsPage = function(rawObj) {
     var obj = parse(rawObj);
 
     var cast = [];
@@ -182,6 +182,55 @@ var Parser = function() {
       }
     };
     self.emit('parsed', castObj);
+  };
+
+  this.parseArtistCreditsPage = function(rawObj) {
+    var obj = parse(rawObj);
+
+    var titles = [];
+
+    obj.$('.filmo-category-section').first().find('.filmo-row').each(function(i,v){
+      var titleId = obj.$(this).find('b').find('a').attr('href').split('/')[2];
+      var title = obj.$(this).find('b').find('a').text().trim();
+      var episodes = [];
+      var character = '';
+      var characterId = null;
+      if (obj.$(this).find('.filmo-episodes').length) {
+        obj.$(this).find('.filmo-episodes').each(function(j,w){
+          var episodeId = obj.$(this).find('a').first().attr('href').split('/')[2];
+          var episodeTitle = obj.$(this).find('a').first().text().trim();
+          var episodeCharacter = '';
+          var episodeCharacterId = null;
+          if (obj.$(this).find('a').length === 2) {
+            episodeCharacter = obj.$(this).find('a').eq(1).text().trim();
+            episodeCharacterId = obj.$(this).find('a').eq(1).attr('href').split('/')[2];
+          } else {
+            episodeCharacter = obj.$(this).text().trim().split('...')[1].trim();
+          }
+          episodes.push({
+            episodeId: episodeId,
+            episodeTitle: episodeTitle,
+            episodeCharacter: episodeCharacter,
+            episodeCharacterId: episodeCharacterId
+          });
+        });
+      } else {
+        if (obj.$(this).find('a').length === 2) {
+          character = obj.$(this).find('a').eq(1).text().trim();
+          characterId = obj.$(this).find('a').eq(1).attr('href').split('/')[2];
+        } else {
+          character = obj.$(this).html().split('<br>')[1].trim();
+        }
+      }
+      titles.push({
+        titleId: titleId,
+        title: title,
+        character: character,
+        characterId: characterId,
+        episodes: episodes
+      });
+    });
+    console.log(JSON.stringify(titles));
   };
 };
 

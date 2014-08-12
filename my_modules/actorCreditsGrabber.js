@@ -7,52 +7,52 @@ var logger = require('./logger.js'),
   util = require('util'),
   events = require('events');
 
-var EpisodeActorGrabber = function(config) {
+var ActorCreditsGrabber = function(config) {
 
   var self = this;
   var db = new DB(config);
   var url = new UrlBuilder();
   
-  var queueTitles = function() {
+  var queueActors = function() {
   	return {
-      sql: 'truncate table ProcessTitles; Insert into ProcessTitles(TitleID,Processed) Select TitleID, 0 as `Processed` from Titles where ParentTitleID = ?;',
+      sql: 'truncate table ProcessActors; Insert into ProcessActors(ActorID,Processed) Select ActorID, 0 as `Processed` from Actors;',
       inserts: [config.baseId]
     };
   };
 
   var getUnprocessed = function() {
     return {
-      sql: 'select * from ProcessTitles where Processed = 0 limit 1;',
+      sql: 'select * from ProcessActors where Processed = 0 limit 1;',
       inserts: []
     };
   };
 
-  var setProcessed = function(titleId) {
+  var setProcessed = function(actorId) {
     return {
-      sql: 'update ProcessTitles set Processed = 1 where TitleID = ?;',
-      inserts: [titleId]
+      sql: 'update ProcessActors set Processed = 1 where ActorID = ?;',
+      inserts: [actorId]
     };
   };
   
   this.start = function() {
-    db.connect('EpisodeActorGrabber', function(){
-      db.query(queueTitles(),checkUnprocessed);
+    db.connect('ActorCreditsGrabber', function(){
+      db.query(queueActors(),checkUnprocessed);
     });
   };
   
   var checkUnprocessed = function() {
     db.query(getUnprocessed(), function(res){
       if (res.length) {
-        var titleId = res[0].TitleID;
-        downloadCredits(titleId);
+        var actorId = res[0].ActorID;
+        downloadCredits(actorId);
       } else {
         quit();
       }
     });
   };
 
-  var downloadCredits = function(titleId) {
-    var urlObj = url.getTitleCreditsUrl(titleId);
+  var downloadCredits = function(actorId) {
+    var urlObj = url.getActorCreditsUrl(actorId);
     
     var dl = new Downloader();
     dl.on('data', function(obj) {
@@ -75,19 +75,15 @@ var EpisodeActorGrabber = function(config) {
         params: obj.url
       });
       
-      db.query(obj.logActorsCmd(),function() {
-        db.query(obj.logCastCmd(),function() {
-          db.query(setProcessed(obj.url.titleId),checkUnprocessed);
-        });
-      });
+      
     });
-    p.parseTitleCreditsPage(obj);
+    p.parseArtistCreditsPage(obj);
   };
 
   var quit = function() {
   	db.disconnect();
   	logger.log({
-      caller: 'EpisodeActorGrabber',
+      caller: 'ActorCreditsGrabber',
       message: 'Exiting'
   	});
     self.emit('done');
@@ -95,6 +91,6 @@ var EpisodeActorGrabber = function(config) {
 
 };
 
-util.inherits(EpisodeActorGrabber, events.EventEmitter);
+util.inherits(ActorCreditsGrabber, events.EventEmitter);
 
-module.exports = EpisodeActorGrabber;
+module.exports = ActorCreditsGrabber;
