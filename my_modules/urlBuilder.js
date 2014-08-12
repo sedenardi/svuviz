@@ -40,6 +40,15 @@ var UrlBuilder = function() {
     };
   };
 
+  this.getCreditsUrl = function(id) {
+    return {
+      titleId: id,
+      getUrl: function() {
+        return baseURL + '/title/' + this.titleId + '/fullcredits';
+      }
+    };
+  };
+
 };
 
 module.exports = UrlBuilder;

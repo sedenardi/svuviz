@@ -29,7 +29,7 @@ var TitleGrabber = function(config) {
   var init = function() {
     db.query(titleExistsQuery(), function titleExistsQueryDone(res) {
       if (!res.length) {
-        downloadTitle(config.baseId);
+        downloadTitle(titleId);
       } else {
       	quit();
       }

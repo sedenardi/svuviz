@@ -101,6 +101,88 @@ var Parser = function() {
     };
     self.emit('parsed', seasonObj);
   };
+
+  this.parseCreditsPage = function(rawObj) {
+    var obj = parse(rawObj);
+
+    var cast = [];
+    obj.$('.cast_list').find('tr.odd').each(function(i,v){
+      var actorId = obj.$(this).find('[itemprop="actor"]').find('a').attr('href').split('/')[2];
+      var name = obj.$(this).find('[itemprop="actor"]').find('[itemprop="name"]').text().trim();
+      var character = '';
+      var characterId = null;
+      if (obj.$(this).find('.character').find('a').length) {
+        character = obj.$(this).find('.character').find('a').text().trim();
+        characterId = obj.$(this).find('.character').find('a').attr('href').split('/')[2];
+      } else {
+        character = obj.$(this).find('.character').text().trim();
+      }
+      cast.push({
+        actorId: actorId,
+        name: name,
+        character: character,
+        characterId: characterId
+      });
+    });
+    obj.$('.cast_list').find('tr.even').each(function(i,v){
+      var actorId = obj.$(this).find('[itemprop="actor"]').find('a').attr('href').split('/')[2];
+      var name = obj.$(this).find('[itemprop="actor"]').find('[itemprop="name"]').text().trim();
+      var character = '';
+      var characterId = null;
+      if (obj.$(this).find('.character').find('a').length) {
+        character = obj.$(this).find('.character').find('a').text().trim();
+        characterId = obj.$(this).find('.character').find('a').attr('href').split('/')[2];
+      } else {
+        character = obj.$(this).find('.character').text().trim();
+      }
+      cast.push({
+        actorId: actorId,
+        name: name,
+        character: character,
+        characterId: characterId
+      });
+    });
+    
+    var castObj = {
+      url: obj.url,
+      cast: cast,
+      logActorsCmd: function() {
+        var sql = 'Insert into Actors(ActorID,Name) select * from (';
+        var s = 'select ? as `ActorID`,? as `Name`';
+        var selects = [];
+        var inserts = [];
+        for (var i = 0; i < this.cast.length; i++) {
+          selects.push(s);
+          inserts.push(this.cast[i].actorId);
+          inserts.push(this.cast[i].name);
+        }
+        sql += selects.join(' UNION ') + ') t1 where not exists (select 1 from Actors t where t.ActorID = t1.ActorID);';
+        return {
+          sql: sql,
+          inserts: inserts
+        };
+      },
+      logCastCmd: function() {
+        var sql = 'Insert into Appearances(ActorID,TitleID,`Character`,CharacterID) select * from (';
+        var s = 'select ? as `ActorID`,? as `TitleID`,? as `Character`,? as `CharacterID`';
+        var selects = [];
+        var inserts = [];
+        for (var i = 0; i < this.cast.length; i++) {
+          selects.push(s);
+          inserts.push(this.cast[i].actorId);
+          inserts.push(this.url.titleId);
+          inserts.push(this.cast[i].character);
+          inserts.push(this.cast[i].characterId);
+        }
+        sql += selects.join(' UNION ') + ') t1 where not exists (select 1 from Appearances t where t.ActorID = t1.ActorID and t.TitleID = t1.TitleID);';
+        return {
+          sql: sql,
+          inserts: inserts
+        };
+      }
+    };
+    self.emit('parsed', castObj);
+  };
 };
 
 util.inherits(Parser, events.EventEmitter);

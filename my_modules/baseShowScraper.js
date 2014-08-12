@@ -54,7 +54,9 @@ var BaseShowScraper = function(config) {
         if (obj.url.hasNextSeason()) {
           var nextSeason = obj.url.getNextSeason();
           downloadSeason(nextSeason);
-        }        
+        } else {
+          self.emit('done');
+        }
       });
     });
     p.parseSeasonPage(obj);
