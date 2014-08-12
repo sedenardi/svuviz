@@ -2,6 +2,7 @@ var logger = require('./logger.js'),
   Downloader = require('./downloader.js'),
   Parser = require('./parser.js'),
   UrlBuilder = require('./urlBuilder.js'),
+  TitleGrabber = require('./titleGrabber.js'),
   DB = require('./db.js'),
   moment = require('moment'),
   util = require('util'),
@@ -13,39 +14,33 @@ var BaseShowScraper = function(config) {
   var db = new DB(config);
   var url = new UrlBuilder();
   
-  var baseShowExistsQuery = {
-    sql: 'Select * from Titles where TitleID = ?;',
-    inserts: [config.baseId]
-  };
-  
   this.start = function() {
-    db.connect('BaseShowScraper', init);
+    var baseGrabber = new TitleGrabber(config);
+    baseGrabber.on('done', startSeasons);
+    baseGrabber.start(config.baseId);
   };
   
-  var init = function() {
-    db.query(baseShowExistsQuery, function baseQueryDone(res) {
-      if (!res.length) {
-        downloadTitle(config.baseId);
-      }
+  var startSeasons = function() {
+    db.connect('BaseShowScraper', function() {
+      var seasonUrl = url.getSeasonsUrl(config.baseId);
+      downloadSeason(seasonUrl);
     });
   };
 
-  var downloadTitle = function(titleId) {
-    var urlObj = url.getTitleUrl(titleId);
-    
+  var downloadSeason = function(seasonUrl) {
     var dl = new Downloader();
     dl.on('data', function(obj) {
-      parseTitlePage(obj);
+      parseSeason(obj);
     });
     
     dl.on('error', function(logObj) {
       logger.log(logObj);
     });
 
-    dl.download(urlObj);
+    dl.download(seasonUrl);
   };
 
-  var parseTitlePage = function(obj) {
+  var parseSeason = function(obj) {
     var p = new Parser();
     p.on('parsed', function(obj) {
       logger.log({
@@ -55,13 +50,14 @@ var BaseShowScraper = function(config) {
       });
       
       var cmd = obj.logCmd();
-      db.query(cmd);
+      db.query(cmd, function() {
+        if (obj.url.hasNextSeason()) {
+          var nextSeason = obj.url.getNextSeason();
+          downloadSeason(nextSeason);
+        }        
+      });
     });
-    p.parseTitlePage(obj);
-  };
-  
-  var startSeasons = function() {
-
+    p.parseSeasonPage(obj);
   };
 
 };
