@@ -12,6 +12,8 @@ var ActorCreditsGrabber = function(config) {
   var self = this;
   var db = new DB(config);
   var url = new UrlBuilder();
+  var moreLinks = [];
+  var moreLinksIndex = 0;
   
   var queueActors = function() {
   	return {
@@ -36,7 +38,8 @@ var ActorCreditsGrabber = function(config) {
   
   this.start = function() {
     db.connect('ActorCreditsGrabber', function(){
-      db.query(queueActors(),checkUnprocessed);
+      //db.query(queueActors(),checkUnprocessed);
+      checkUnprocessed();
     });
   };
   
@@ -75,9 +78,65 @@ var ActorCreditsGrabber = function(config) {
         params: obj.url
       });
       
-      
+      db.query(obj.logTitlesCmd(),function() {
+        db.query(obj.logAppearancesCmd(),function() {
+          moreLinks = obj.getMoreLinks();
+          if (moreLinks.length) {
+            moreLinksIndex = 0;
+            nextMoreLink();
+          } else {
+            markProcessed(obj.url.actorId);
+          }
+        });
+      });
     });
     p.parseArtistCreditsPage(obj);
+  };
+
+  var nextMoreLink = function() {
+    if (moreLinksIndex < moreLinks.length) {
+      downloadMoreLink(moreLinks[moreLinksIndex]);
+    } else {
+      markProcessed(moreLinks[0].actorId);
+    }
+  };
+
+  var downloadMoreLink = function(moreLinkObj) {
+    var urlObj = url.getMoreEpisodesUrl(moreLinkObj);
+
+    var dl = new Downloader();
+    dl.on('data', function(obj) {
+      parseMoreLink(obj);
+    });
+    
+    dl.on('error', function(logObj) {
+      logger.log(logObj);
+    });
+
+    dl.download(urlObj);
+  };
+
+  var parseMoreLink = function(obj) {
+    var p = new Parser();
+    p.on('parsed', function(obj) {
+      logger.log({
+        caller: 'Parser',
+        message: 'parsed',
+        params: obj.url
+      });
+      
+      db.query(obj.logTitlesCmd(),function() {
+        db.query(obj.logAppearancesCmd(),function() {
+          moreLinksIndex++;
+          nextMoreLink();
+        });
+      });
+    });
+    p.parseMoreEpisodes(obj);
+  };
+
+  var markProcessed = function(actorId) {
+    db.query(setProcessed(actorId), checkUnprocessed);
   };
 
   var quit = function() {

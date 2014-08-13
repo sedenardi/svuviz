@@ -6,20 +6,22 @@ var UrlBuilder = function() {
   
   this.getTitleUrl = function(id) {
     return {
+      action: 'getTitleUrl',
       titleId: id,
       getUrl: function() {
-        return baseURL + '/title/' + this.titleId + '/';
+        return baseURL + 'title/' + this.titleId + '/';
       }
     };
   };
 
   this.getSeasonsUrl = function(id) {
     return {
+      action: 'getSeasonsUrl',
       titleId: id,
       season: 1,
       maxSeason: 1,
       getUrl: function() {
-        return baseURL + '/title/' + this.titleId + '/episodes?season=' + this.season;
+        return baseURL + 'title/' + this.titleId + '/episodes?season=' + this.season;
       },
       hasNextSeason: function() {
         return this.season < this.maxSeason;
@@ -42,18 +44,33 @@ var UrlBuilder = function() {
 
   this.getTitleCreditsUrl = function(id) {
     return {
+      action: 'getTitleCreditsUrl',
       titleId: id,
       getUrl: function() {
-        return baseURL + '/title/' + this.titleId + '/fullcredits';
+        return baseURL + 'title/' + this.titleId + '/fullcredits';
       }
     };
   };
 
   this.getActorCreditsUrl = function(id) {
     return {
+      action: 'getActorCreditsUrl',
       actorId: id,
       getUrl: function() {
-        return baseURL + '/name/' + this.actorId + '/';
+        return baseURL + 'name/' + this.actorId + '/';
+      }
+    };
+  };
+
+  this.getMoreEpisodesUrl = function(moreLinkObj) {
+    return {
+      action: 'getMoreEpisodesUrl',
+      moreLinkObj: moreLinkObj,
+      getUrl: function() {
+        return baseURL + 'name/' + moreLinkObj.actorId +'/episodes/_ajax?' +
+          'title=' + moreLinkObj.titleId +
+          '&category=' + moreLinkObj.category + 
+          '&credit_index=' + moreLinkObj.credit_index;
       }
     };
   };

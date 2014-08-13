@@ -7,13 +7,19 @@ var log = function(logObj, db) {
   }
 };
 
+var pad = function (num, size) {
+  var s = num + '';
+  while (s.length < size) s = "0" + s;
+  return s;
+};
+
 var formatDate = function(date) {
   return date.getFullYear() + '-' + 
-    (date.getMonth() + 1) + '-' + 
-    date.getDate() + ' ' + 
-    date.getHours() + ':' + 
-    date.getMinutes() + ':' + 
-    date.getSeconds() + ':' + 
+    pad((date.getMonth() + 1),2) + '-' + 
+    pad(date.getDate(),2) + ' ' + 
+    pad(date.getHours(),2) + ':' + 
+    pad(date.getMinutes(),2) + ':' + 
+    pad(date.getSeconds(),2) + ':' + 
     date.getMilliseconds();
 };
 
