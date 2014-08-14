@@ -100,7 +100,7 @@ var ActorCreditsGrabber = function(config) {
         });
       });
     });
-    p.parseArtistCreditsPage(obj);
+    p.parseArtistCreditsPage(obj, config.baseId);
   };
 
   var nextMoreLink = function() {

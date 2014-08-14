@@ -184,7 +184,7 @@ var Parser = function() {
     self.emit('parsed', castObj);
   };
 
-  this.parseArtistCreditsPage = function(rawObj) {
+  this.parseArtistCreditsPage = function(rawObj, excludedTitleId) {
     var obj = parse(rawObj);
 
     var credits = [];
@@ -237,14 +237,16 @@ var Parser = function() {
           character = obj.$(raw).text().trim().replace('\n',' ');
         }
       }
-      credits.push({
-        titleId: titleId,
-        title: title,
-        character: character,
-        characterId: characterId,
-        episodes: episodes,
-        moreLinkObj: moreLinkObj
-      });
+      if (titleId !== excludedTitleId) {
+        credits.push({
+          titleId: titleId,
+          title: title,
+          character: character,
+          characterId: characterId,
+          episodes: episodes,
+          moreLinkObj: moreLinkObj
+        });
+      }
     });
     //console.log(JSON.stringify(credits));
     var creditsObj = {
