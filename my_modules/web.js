@@ -21,8 +21,18 @@ var Web = function(config) {
   app.set('view engine', 'handlebars');
   app.use(express.static(rootDir + config.web.folders.static));
 
-  app.get('/', function (req, res) {
-    res.render('index');
+  app.get('/svuInfo.json', function (req, res) {
+    var svuInfo = queries.svuInfo();
+    db.query(svuInfo.cmd, function(dbRes) {
+      res.json(svuInfo.process(dbRes));
+    });
+  });
+
+  app.get('/commonInfo.json', function (req, res) {
+    var commonInfo = queries.commonInfo();
+    db.query(commonInfo.cmd, function(dbRes) {
+      res.json(commonInfo.process(dbRes));
+    });
   });
 
   this.startServer = function() {

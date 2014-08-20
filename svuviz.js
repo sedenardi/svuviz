@@ -7,17 +7,14 @@ var config = require('./config.json'),
 
 var base = new BaseShowScraper(config);
 var cast = new EpisodeActorGrabber(config);
+var credits = new ActorCreditsGrabber(config);
 base.on('done',function() {
   cast.start();
 });
 cast.on('done',function() {
-
+  credits.start();
 });
-
 //base.start();
 
-var credits = new ActorCreditsGrabber(config);
-credits.start();
-
-//var web = new Web(config);
-//web.startServer();
+var web = new Web(config);
+web.startServer();
