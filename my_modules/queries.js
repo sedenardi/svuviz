@@ -1,6 +1,6 @@
 var queries = function() {
 
-  this.svuInfo = function() {
+  this.showInfo = function() {
     var sql = '\
 select \
   t.TitleID \
@@ -23,21 +23,22 @@ from svumap.Titles t \
   , count(distinct c.ActorID2) as Commonalities \
   from svumap.Actors a1 \
     left outer join \
-      (select \
-        app1.ActorID as ActorID1 \
-      , app2.ActorID as ActorID2 \
-      from svumap.Appearances app1 \
-        inner join svumap.Titles t \
-          on t.TitleID = app1.TitleID \
-          and t.ParentTitleID <> \'tt0203259\' \
-        inner join svumap.Appearances app2 \
-          on app2.TitleID = app1.TitleID \
-          and app2.ActorID <> app1.ActorID) c \
+        (select \
+          app1.ActorID as ActorID1 \
+        , app2.ActorID as ActorID2 \
+        from svumap.Appearances app1 \
+          inner join svumap.Titles t \
+            on t.TitleID = app1.TitleID \
+            and t.ParentTitleID <> \'tt0203259\' \
+          inner join svumap.Appearances app2 \
+            on app2.TitleID = app1.TitleID \
+            and app2.ActorID <> app1.ActorID) c \
       on c.ActorID1 = a1.ActorID \
   group by a1.ActorID,a1.Name) c \
     on c.ActorID = a.ActorID \
 where t.ParentTitleID = \'tt0203259\' \
 and t.AirDate is not null \
+and c.Commonalities > 0 \
 order by t.AirDate, c.Commonalities desc;';
     var cmd = {
       sql: sql,
@@ -76,7 +77,7 @@ order by t.AirDate, c.Commonalities desc;';
     };
   };
 
-  this.commonInfo = function() {
+  this.actorsAndTitles = function() {
     var sql = '\
 select distinct \
   a1.ActorID \
@@ -109,29 +110,73 @@ and exists \
       for (var i = 0; i < dbRes.length; i++) {
         if (typeof actors[dbRes[i].ActorID] === 'undefined') {
           actors[dbRes[i].ActorID] = {
-            ActorID: dbRes[i].ActorID,
-            Name: dbRes[i].Name/*,
-            Appearances: []*/
-          };
-        }
-        //actors[dbRes[i].ActorID].Appearances.push(dbRes[i].TitleID);
-        if (typeof titles[dbRes[i].TitleID] === 'undefined') {
-          titles[dbRes[i].TitleID] = {
-            TitleID: dbRes[i].TitleID,
-            Title: dbRes[i].Title,
-            ParentTitleID: dbRes[i].ParentTitleID,
-            ParentTitle: dbRes[i].ParentTitle,
+            //ActorID: dbRes[i].ActorID,
+            Name: dbRes[i].Name,
             Appearances: []
           };
         }
-        titles[dbRes[i].TitleID].Appearances.push({
-          ActorID: dbRes[i].ActorID,
+        actors[dbRes[i].ActorID].Appearances.push({
+          //ActorID: dbRes[i].ActorID,
+          TitleID: dbRes[i].TitleID,
           Character: dbRes[i].Character,
           CharacterID: dbRes[i].CharacterID
         });
+        if (typeof titles[dbRes[i].TitleID] === 'undefined') {
+          titles[dbRes[i].TitleID] = {
+            //TitleID: dbRes[i].TitleID,
+            Title: dbRes[i].Title,
+            ParentTitleID: dbRes[i].ParentTitleID,
+            ParentTitle: dbRes[i].ParentTitle/*,
+            Appearances: []*/
+          };
+        }
+        /*titles[dbRes[i].TitleID].Appearances.push({
+          ActorID: dbRes[i].ActorID,
+          Character: dbRes[i].Character,
+          CharacterID: dbRes[i].CharacterID
+        });*/
       }
       return {
         titles: titles,
+        actors: actors
+      };
+    };
+    return {
+      cmd: cmd,
+      process: process
+    };
+  };
+
+  this.commonalities = function() {
+    var sql = '\
+select \
+  app1.ActorID as ActorID1 \
+, app2.ActorID as ActorID2 \
+,  t.TitleID \
+,  t.ParentTitleID \
+from svumap.Appearances app1 \
+  inner join svumap.Titles t \
+    on t.TitleID = app1.TitleID \
+    and t.ParentTitleID <> \'tt0203259\' \
+  inner join svumap.Appearances app2 \
+    on app2.TitleID = app1.TitleID \
+    and app2.ActorID <> app1.ActorID;';
+    var cmd = {
+      sql: sql,
+      inserts: []
+    };
+    var process = function(dbRes) {
+      var actors = {};
+      for (var i = 0; i < dbRes.length; i++) {
+        if (typeof actors[dbRes[i].ActorID1] === 'undefined') {
+          actors[dbRes[i].ActorID1] = [];
+        }
+        actors[dbRes[i].ActorID1].push({
+          ActorID: dbRes[i].ActorID2,
+          TitleID: dbRes[i].TitleID
+        });
+      }
+      return {
         actors: actors
       };
     };
