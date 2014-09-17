@@ -10,6 +10,7 @@ select \
 , t.Synopsis \
 , t.AirDate \
 , a.ActorID \
+, c.Name as ActorName \
 , a.Character \
 , a.CharacterID \
 , c.Commonalities \
@@ -61,6 +62,7 @@ order by t.AirDate, c.Commonalities desc;';
         }
         titles[dbRes[i].TitleID].Appearances.push({
           ActorID: dbRes[i].ActorID,
+          ActorName: dbRes[i].ActorName,
           Commonalities: dbRes[i].Commonalities,
           Character: dbRes[i].Character,
           CharacterID: dbRes[i].CharacterID
