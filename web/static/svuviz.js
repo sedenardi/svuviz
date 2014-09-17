@@ -92,7 +92,8 @@ var initGraph = function() {
       var tooltip = d3.select("#tooltip")
         .style("left", xPosition + "px")
         .style("top", yPosition + "px");
-      tooltip.select("#name").text(d.ActorID);
+      tooltip.select("#name").text(d.ActorName);
+      tooltip.select("#nameId").text(d.ActorID);
       tooltip.select("#character").text(d.Character);
       var appearances = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]')[0].length;
       tooltip.select("#appearances").text(appearances);
