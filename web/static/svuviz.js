@@ -58,17 +58,42 @@ var initGraph = function() {
     .attr('data-synopsis', function(d) { return d.Synopsis; })
     .attr('data-airaate', function(d) { return d.AirDate; });
 
+  // NEED IN OWN GROUP (for )
   var episodes = groups.append('rect')
+    .classed('episode', true)
     .attr('x', function(d, i) { return xScale(i); })
     .attr('y', (height - episodeHeight))
     .attr('height', episodeHeight)
     .attr('width', xScale.rangeBand())
-    .style('fill', function(d) { return colors(d.Season); });
+    .style('fill', function(d) { return colors(d.Season); })
+    .on('mouseenter', function(d) {
+      d3.select(this).style('fill', 'rgb(255, 0, 0)');
+
+      var xPosition = parseFloat(d3.select(this).attr("x")) + 25;
+      if (xPosition > (width - (200 - 25))) xPosition -= (200 + 50);
+      var yPosition = height - episodeHeight - 100;
+      //Update the tooltip position and value
+      var tooltip = d3.select("#episodeTooltip")
+        .style("left", xPosition + "px")
+        .style("top", yPosition + "px");
+      tooltip.select("#title").text(d.Title);
+      tooltip.select("#season").text(d.Season);
+      tooltip.select("#number").text(d.Number);
+      tooltip.select("#synopsis").text(d.synopsis);
+      tooltip.select("#airdate").text(moment(d.AirDate).format("MMMM Do, YYYY"));
+      //Show the tooltip
+      tooltip.classed("hidden", false);
+    })
+    .on('mouseleave', function(d) {
+      d3.select(this).style('fill', colors(d.Season));
+      d3.select("#episodeTooltip").classed("hidden", true);
+    });
 
   var rects = groups.selectAll('rect')
     .data(function(d) { return d.Appearances; })
     .enter()
     .append('rect')
+    .classed('appearance', true)
     .attr('x', function(d) { return xScale(d.x); })
     .attr('y', function(d,i) { return height - yScale(i); })
     .attr('height', function(d) { return yHeight; })
@@ -89,22 +114,21 @@ var initGraph = function() {
       if (xPosition > (width - (200 - 25))) xPosition -= (200 + 50);
       var yPosition = height - 100;
       //Update the tooltip position and value
-      var tooltip = d3.select("#tooltip")
+      var tooltip = d3.select("#appearanceTooltip")
         .style("left", xPosition + "px")
         .style("top", yPosition + "px");
       tooltip.select("#name").text(d.ActorName);
-      tooltip.select("#nameId").text(d.ActorID);
       tooltip.select("#character").text(d.Character);
       var appearances = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]')[0].length;
       tooltip.select("#appearances").text(appearances);
       tooltip.select("#commonalities").text(d.Commonalities);
       //Show the tooltip
-      d3.select("#tooltip").classed("hidden", false);
+      tooltip.classed("hidden", false);
     })
     .on('mouseleave', function(d) {
       d3.selectAll('rect[data-actorid="' + d.ActorID + '"]')
         .style('fill', 'rgb(0, 0, ' + Math.floor(colorScale(d.Commonalities)) + ')');
-      d3.select("#tooltip").classed("hidden", true);
+      d3.select("#appearanceTooltip").classed("hidden", true);
     });
 };
 

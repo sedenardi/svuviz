@@ -112,10 +112,10 @@ var Parser = function() {
       var character = '';
       var characterId = null;
       if (obj.$(this).find('.character').find('a').length) {
-        character = obj.$(this).find('.character').find('a').text().trim();
+        character = obj.$(this).find('.character').find('a').text().trim().replace(/\s{2,}/g, ' ');
         characterId = obj.$(this).find('.character').find('a').attr('href').split('/')[2];
       } else {
-        character = obj.$(this).find('.character').text().trim();
+        character = obj.$(this).find('.character').text().trim().replace(/\s{2,}/g, ' ');
       }
       cast.push({
         actorId: actorId,
@@ -130,10 +130,10 @@ var Parser = function() {
       var character = '';
       var characterId = null;
       if (obj.$(this).find('.character').find('a').length) {
-        character = obj.$(this).find('.character').find('a').text().trim();
+        character = obj.$(this).find('.character').find('a').text().trim().replace(/\s{2,}/g, ' ');
         characterId = obj.$(this).find('.character').find('a').attr('href').split('/')[2];
       } else {
-        character = obj.$(this).find('.character').text().trim();
+        character = obj.$(this).find('.character').text().trim().replace(/\s{2,}/g, ' ');
       }
       cast.push({
         actorId: actorId,
@@ -213,10 +213,10 @@ var Parser = function() {
             var episodeCharacter = '';
             var episodeCharacterId = null;
             if (obj.$(this).find('a').length === 2) {
-              episodeCharacter = obj.$(this).find('a').eq(1).text().trim().replace('\n',' ');
+              episodeCharacter = obj.$(this).find('a').eq(1).text().trim().replace(/\s{2,}/g, ' ');
               episodeCharacterId = obj.$(this).find('a').eq(1).attr('href').split('/')[2];
             } else if (obj.$(this).text().trim().split('...').length === 2) {
-              episodeCharacter = obj.$(this).text().trim().split('...')[1].trim().replace('\n',' ');
+              episodeCharacter = obj.$(this).text().trim().split('...')[1].trim().replace(/\s{2,}/g, ' ');
             }
             episodes.push({
               episodeId: episodeId,
@@ -228,9 +228,9 @@ var Parser = function() {
         });
       } else if (obj.$(this).html().split('<br>').length > 1) {
         if (obj.$(this).find('a:not(.in_production)').length === 1) {
-          character = obj.$(this).html().split('<br>')[1].trim().replace('\n',' ');
+          character = obj.$(this).html().split('<br>')[1].trim().replace(/\s{2,}/g, ' ');
         } else if (obj.$(this).find('a:not(.in_production)').length === 2) {
-          character = obj.$(this).find('a:not(.in_production)').eq(1).text().trim();
+          character = obj.$(this).find('a:not(.in_production)').eq(1).text().trim().replace(/\s{2,}/g, ' ');
           characterId = obj.$(this).find('a:not(.in_production)').eq(1).attr('href').split('/')[2];
         } else {
           var raw = obj.$(this).html().split('<br>')[1].trim();
@@ -329,10 +329,10 @@ var Parser = function() {
       var episodeCharacter = '';
       var episodeCharacterId = null;
       if (obj.$(this).find('a').length === 2) {
-        episodeCharacter = obj.$(this).find('a').eq(1).text().trim();
+        episodeCharacter = obj.$(this).find('a').eq(1).text().trim().replace(/\s{2,}/g, ' ');
         episodeCharacterId = obj.$(this).find('a').eq(1).attr('href').split('/')[2];
       } else if (obj.$(this).text().trim().split('...').length === 2) {
-        episodeCharacter = obj.$(this).text().trim().split('...')[1].trim();
+        episodeCharacter = obj.$(this).text().trim().split('...')[1].trim().replace(/\s{2,}/g, ' ');
       }
       episodes.push({
         episodeId: episodeId,
