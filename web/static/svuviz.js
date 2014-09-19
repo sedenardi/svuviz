@@ -16,7 +16,7 @@ var initGraph = function() {
 
   margin = 20;
   width = $(window).width() - 2*margin;
-  height = $(window).height() - 2*margin - 4;
+  height = $(window).height() - 2*margin - 4 - $('#main').offset().top;
   episodeHeight = Math.floor(height / 8);
 
   xScale = d3.scale.ordinal()
@@ -136,6 +136,9 @@ var initGraph = function() {
       d3.selectAll('rect[data-actorid="' + d.ActorID + '"]')
         .style('fill', 'rgb(0, 0, ' + Math.floor(colorScale(d.Commonalities)) + ')');
       d3.select("#appearanceTooltip").classed("hidden", true);
+    })
+    .on('click', function(d) {
+      
     });
 };
 

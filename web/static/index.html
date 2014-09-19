@@ -7,12 +7,17 @@
     <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.3/moment.min.js"></script>
     <script src="svuviz.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     <style type="text/css">
+body {
+  margin: 8px;
+}
 rect.appearance {
   stroke: rgb(235, 179, 148);
   stroke-width: 0.5px;
 }
-.tooltip {
+.hoverTooltip {
   position: absolute;
   width: 200px;
   height: auto;
@@ -26,27 +31,65 @@ rect.appearance {
   box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
   pointer-events: none;
 }
-.tooltip.hidden {
+.hoverTooltip.hidden {
   display: none;
 }
-.tooltip p {
+.hoverTooltip p {
   margin: 0;
   font-family: sans-serif;
   font-size: 12px;
   line-height: 16px;
 }
+#top {
+  width: 100%;
+  margin: 4px 0;
+}
+.row-centered {
+    text-align:center;
+}
+.col-centered {
+    display:inline-block;
+    float:none;
+    /* reset the text-align */
+    text-align:center;
+    /* inline-block space fix */
+    margin-right:-4px;
+}
+.actor {
+  width:100%;
+  height:100%;
+  border:1px solid #cecece;
+  padding: 2px 4px;
+}
+.actorName {
+  font-size: 12pt;
+  font-family: sans-serif;
+}
     </style>
   </head>
   <body> 
-    <div id="top"></div>
+    <div id="top" class="container">
+      <div class="row row-centered">
+        <div class="col-xs-2 col-centered">
+          <div class="actor">
+            <span class="actorName">Mariska</span>
+          </div>
+        </div>
+        <div class="col-xs-2 col-centered">
+          <div class="actor">
+            <span class="actorName">Chris</span>
+          </div>
+        </div>
+      </div>
+    </div>
     <div id="main"></div>
-    <div id="appearanceTooltip" class="tooltip hidden">
+    <div id="appearanceTooltip" class="hoverTooltip hidden">
       <p><strong>Actor: <span id="name"></span></strong></p>
       <p>Character: <span id="character"></span></p>
       <p>Appearances: <span id="appearances"></span></p>
       <p>Commonalities: <span id="commonalities"></span></p>
     </div>
-    <div id="episodeTooltip" class="tooltip hidden">
+    <div id="episodeTooltip" class="hoverTooltip hidden">
       <p>Title: <span id="title"></span></p>
       <p>Season: <span id="season"></span> Episode: <span id="number"></span></p>
       <p>Synopsis: <span id="synopsis"></span>...</p>
