@@ -21,7 +21,7 @@ var initGraph = function() {
 
   xScale = d3.scale.ordinal()
     .domain(d3.range(dataset.length))
-    .rangeBands([0, width], 0.2);
+    .rangeBands([0, width], 0.1);
 
   yScale = d3.scale.linear()
     .domain([0, d3.max(dataset, function(d) {
@@ -47,19 +47,20 @@ var initGraph = function() {
     .attr('width', width)
     .attr('height', height);
 
-  var groups = svg.selectAll('g')
+  var epGroups = svg.append('g')
+    .selectAll('g')
     .data(dataset)
     .enter()
-    .append('g')
-    .attr('data-titleid', function(d) { return d.TitleID; })
+    .append('g');
+    /*.attr('data-titleid', function(d) { return d.TitleID; })
     .attr('data-season', function(d) { return d.Season; })
     .attr('data-number', function(d) { return d.Number; })
     .attr('data-title', function(d) { return d.Title; })
     .attr('data-synopsis', function(d) { return d.Synopsis; })
-    .attr('data-airaate', function(d) { return d.AirDate; });
+    .attr('data-airaate', function(d) { return d.AirDate; });*/
 
   // NEED IN OWN GROUP (for )
-  var episodes = groups.append('rect')
+  var episodes = epGroups.append('rect')
     .classed('episode', true)
     .attr('x', function(d, i) { return xScale(i); })
     .attr('y', (height - episodeHeight))
@@ -70,8 +71,8 @@ var initGraph = function() {
       d3.select(this).style('fill', 'rgb(255, 0, 0)');
 
       var xPosition = parseFloat(d3.select(this).attr("x")) + 25;
-      if (xPosition > (width - (200 - 25))) xPosition -= (200 + 50);
-      var yPosition = height - episodeHeight - 100;
+      if (xPosition > (width - (200 - 20))) xPosition -= (200 + 50);
+      var yPosition = height - episodeHeight - 200;
       //Update the tooltip position and value
       var tooltip = d3.select("#episodeTooltip")
         .style("left", xPosition + "px")
@@ -79,7 +80,7 @@ var initGraph = function() {
       tooltip.select("#title").text(d.Title);
       tooltip.select("#season").text(d.Season);
       tooltip.select("#number").text(d.Number);
-      tooltip.select("#synopsis").text(d.synopsis);
+      tooltip.select("#synopsis").text(d.Synopsis);
       tooltip.select("#airdate").text(moment(d.AirDate).format("MMMM Do, YYYY"));
       //Show the tooltip
       tooltip.classed("hidden", false);
@@ -89,13 +90,19 @@ var initGraph = function() {
       d3.select("#episodeTooltip").classed("hidden", true);
     });
 
-  var rects = groups.selectAll('rect')
+  var appGroups = svg.append('g')
+    .selectAll('g')
+    .data(dataset)
+    .enter()
+    .append('g');
+
+  var rects = appGroups.selectAll('rect')
     .data(function(d) { return d.Appearances; })
     .enter()
     .append('rect')
     .classed('appearance', true)
     .attr('x', function(d) { return xScale(d.x); })
-    .attr('y', function(d,i) { return height - yScale(i); })
+    .attr('y', function(d,i) { return height - yScale(i + 1); })
     .attr('height', function(d) { return yHeight; })
     .attr('width', xScale.rangeBand())
     .style('fill', function(d) {
