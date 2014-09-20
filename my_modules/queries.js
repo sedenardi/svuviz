@@ -188,6 +188,50 @@ from svumap.Appearances app1 \
     };
   };
 
+  this.getCommonActors = function(ActorID) {
+    var sql = '\
+select distinct a2.ActorID \
+from Appearances a1 \
+  inner join Appearances a2 \
+    on a1.TitleID = a2.TitleID \
+    and a1.ActorID <> a2.ActorID \
+where a1.ActorID = ? \
+and not exists \
+  (select 1 from Titles t \
+  where t.TitleID = a1.TitleID \
+  and t.ParentTitleID = \'tt0203259\');';
+    return {
+      sql: sql,
+      inserts: [ActorID]
+    };
+  };
+
+  this.getCommonTitles = function(ActorID1,ActorID2) {
+    var sql = '\
+select \
+  t.TitleID \
+, t.ParentTitleID \
+, t.Season \
+, t.Number \
+, t.Title \
+, pt.Title as ParentTitle \
+from Titles t \
+  left outer join Titles pt \
+    on pt.TitleID = t.ParentTitleID \
+where exists \
+  (select 1 from Appearances a \
+  where a.TitleID = t.TitleID \
+  and a.ActorID = ?) \
+and exists \
+  (select 1 from Appearances a \
+  where a.TitleID = t.TitleID \
+  and a.ActorID = ?);';
+    return {
+      sql: sql,
+      inserts: [ActorID1,ActorID2]
+    };
+  };
+
 };
 
 module.exports = new queries();

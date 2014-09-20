@@ -110,36 +110,102 @@ var initGraph = function() {
       return 'rgb(0, 0, ' + s + ')';
     })
     .attr('data-actorid', function(d) { return d.ActorID; })
-    .attr('data-character', function(d) { return d.Character; })
-    .attr('data-characterid', function(d) { return d.CharacterID; })
-    .attr('data-commonalities', function(d) { return d.Commonalities; })
+    .classed('clickable', true)
     .on('mouseenter', function(d) {
-      d3.selectAll('rect[data-actorid="' + d.ActorID + '"]')
-        .style('fill', 'rgb(255, 0, 0)');
+      if (d3.select(this).classed('clickable')) {
+        var actor = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
+        if (!d3.select('#actor1').classed('active')) {
+          actor.classed('hover1', true);
+        } else if (!d3.select('#actor2').classed('active')) {
+          actor.classed('hover2', true);
+        }
 
-      var xPosition = parseFloat(d3.select(this).attr("x")) + 25;
-      if (xPosition > (width - (200 - 25))) xPosition -= (200 + 50);
-      var yPosition = height - 100;
-      //Update the tooltip position and value
-      var tooltip = d3.select("#appearanceTooltip")
-        .style("left", xPosition + "px")
-        .style("top", yPosition + "px");
-      tooltip.select("#name").text(d.ActorName);
-      tooltip.select("#character").text(d.Character);
-      var appearances = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]')[0].length;
-      tooltip.select("#appearances").text(appearances);
-      tooltip.select("#commonalities").text(d.Commonalities);
-      //Show the tooltip
-      tooltip.classed("hidden", false);
+        var xPosition = parseFloat(d3.select(this).attr("x")) + 25;
+        if (xPosition > (width - (200 - 25))) xPosition -= (200 + 50);
+        var yPosition = height - 100;
+        //Update the tooltip position and value
+        var tooltip = d3.select('#appearanceTooltip')
+          .style('left', xPosition + 'px')
+          .style('top', yPosition + 'px');
+        tooltip.select('#name').text(d.ActorName);
+        tooltip.select('#character').text(d.Character);
+        var appearances = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]')[0].length;
+        tooltip.select('#appearances').text(appearances);
+        tooltip.select('#commonalities').text(d.Commonalities);
+        //Show the tooltip
+        tooltip.classed('hidden', false);
+      }
     })
     .on('mouseleave', function(d) {
-      d3.selectAll('rect[data-actorid="' + d.ActorID + '"]')
-        .style('fill', 'rgb(0, 0, ' + Math.floor(colorScale(d.Commonalities)) + ')');
-      d3.select("#appearanceTooltip").classed("hidden", true);
+      var actor = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
+      actor.classed('hover1', false)
+        .classed('hover2', false);
+        /*.style('fill', 'rgb(0, 0, ' + Math.floor(colorScale(d.Commonalities)) + ')');*/
+      d3.select('#appearanceTooltip').classed('hidden', true);
     })
     .on('click', function(d) {
-      
+      if (d3.select(this).classed('clickable')) {
+        var actor = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
+        if (!d3.select('#actor1').classed('active')) {
+          d3.select('#actor1')
+            .attr('data-actorid', d.ActorID)
+            .classed('active', true);
+          d3.select('#actor1 .actorName').text(d.ActorName);
+          actor.classed('active1', true);
+        } else if (!d3.select('#actor2').classed('active')) {
+          d3.select('#actor2')
+            .attr('data-actorid', d.ActorID)
+            .classed('active', true);
+          d3.select('#actor2 .actorName').text(d.ActorName);
+          actor.classed('active2', true);
+        }
+        setCommonalities();
+      }
     });
+
+    d3.selectAll('.actorClose')
+      .on('click', function(d) {
+        var parent = d3.select(this)[0][0].parentNode;
+        parent.className = parent.className.replace(' active', '')
+          .replace('active ', '').replace('active', '');
+        if (parent.id === 'actor1') {
+          rects.classed('active1', false);
+        } else if (parent.id === 'actor2') {
+          rects.classed('active2', false);
+        }
+        setCommonalities();
+      });
+
+    var setCommonalities = function() {
+      var both = d3.select('#actor1').classed('active') &&
+        d3.select('#actor2').classed('active');
+      var neither = !d3.select('#actor1').classed('active') &&
+        !d3.select('#actor2').classed('active');
+      rects.classed('common', false);
+      if (both) {
+        rects.classed('clickable', false);
+      } else if (neither) {
+        rects.classed('clickable', true);
+      } else {
+        rects.classed('clickable', false);
+        var actorId = d3.select('#actor1').classed('active') ? 
+          d3.select('#actor1').attr('data-actorid') :
+          d3.select('#actor2').attr('data-actorid');
+        $.ajax({
+          url: '/getCommonActors.json',
+          type: 'GET',
+          dataType: 'json',
+          data: { ActorID: actorId },
+          success: function(response) {
+            for (var i = 0; i < response.length; i++) {
+              d3.selectAll('rect[data-actorid="' + response[i] + '"]')
+                .classed('common', true)
+                .classed('clickable', true);
+            }
+          }
+        });
+      }
+    };
 };
 
 var prepareDataset = function(obj) {
