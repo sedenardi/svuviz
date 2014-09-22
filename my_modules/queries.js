@@ -210,22 +210,25 @@ and not exists \
     var sql = '\
 select \
   t.TitleID \
-, t.ParentTitleID \
 , t.Season \
 , t.Number \
 , t.Title \
+, t.ParentTitleID \
 , pt.Title as ParentTitle \
+, a1.Character as Character1 \
+, a1.CharacterID as CharacterID1 \
+, a2.Character as Character2 \
+, a2.CharacterID as CharacterID2 \
 from Titles t \
+  inner join Appearances a1 \
+    on a1.TitleID = t.TitleID \
+  inner join Appearances a2 \
+    on a2.TitleID = t.TitleID \
   left outer join Titles pt \
     on pt.TitleID = t.ParentTitleID \
-where exists \
-  (select 1 from Appearances a \
-  where a.TitleID = t.TitleID \
-  and a.ActorID = ?) \
-and exists \
-  (select 1 from Appearances a \
-  where a.TitleID = t.TitleID \
-  and a.ActorID = ?);';
+where a1.ActorID = ? \
+and a2.ActorID = ? \
+order by Season, Number;';
     return {
       sql: sql,
       inserts: [ActorID1,ActorID2]

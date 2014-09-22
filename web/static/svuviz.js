@@ -184,6 +184,22 @@ var initGraph = function() {
       rects.classed('common', false);
       if (both) {
         rects.classed('clickable', false);
+        var actorId1 = d3.select('#actor1').attr('data-actorid');
+        var actorName1 = d3.select('#actor1 .actorName').text();
+        var actorId2 = d3.select('#actor2').attr('data-actorid');
+        var actorName2 = d3.select('#actor2 .actorName').text();
+        $.ajax({
+          url: '/getCommonTitles.json',
+          type: 'GET',
+          dataType: 'json',
+          data: { ActorID1: actorId1, ActorID2: actorId2 },
+          success: function(response) {
+            d3.select('#commonModalBody').text(JSON.stringify(response,null,2));
+          }
+        });
+        d3.select('#modalActor1').text(actorName1);
+        d3.select('#modalActor2').text(actorName2);
+        $('#commonModal').modal('show');
       } else if (neither) {
         rects.classed('clickable', true);
       } else {
