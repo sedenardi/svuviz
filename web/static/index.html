@@ -100,6 +100,9 @@ rect.common {
 .actorClose:hover {
   font-weight: bold;
 }
+.commonRow:nth-child(odd) {
+  background-color: #CCC;
+}
     </style>
   </head>
   <body> 
@@ -139,8 +142,7 @@ rect.common {
             <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             <h4 class="modal-title">Titles shared by <span id="modalActor1"></span> and <span id="modalActor2"></span></h4>
           </div>
-          <div class="modal-body">
-            <pre id="commonModalBody"></pre>
+          <div id="commonModalBody" class="modal-body">
           </div>
           <!-- <div class="modal-footer">
           </div> -->

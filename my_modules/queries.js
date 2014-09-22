@@ -209,16 +209,14 @@ and not exists \
   this.getCommonTitles = function(ActorID1,ActorID2) {
     var sql = '\
 select \
-  t.TitleID \
-, t.Season \
-, t.Number \
-, t.Title \
-, t.ParentTitleID \
-, pt.Title as ParentTitle \
+  coalesce(t.ParentTitleID,t.TitleID) as TitleID \
+, coalesce(pt.Title,t.Title) as Title \
+, case when t.ParentTitleID is null then false else true end as TV \
 , a1.Character as Character1 \
 , a1.CharacterID as CharacterID1 \
 , a2.Character as Character2 \
 , a2.CharacterID as CharacterID2 \
+, count(1) as Episodes \
 from Titles t \
   inner join Appearances a1 \
     on a1.TitleID = t.TitleID \
@@ -228,7 +226,7 @@ from Titles t \
     on pt.TitleID = t.ParentTitleID \
 where a1.ActorID = ? \
 and a2.ActorID = ? \
-order by Season, Number;';
+group by TitleID,Title,TV,a1.Character,a1.CharacterID,a2.Character,a2.CharacterID;';
     return {
       sql: sql,
       inserts: [ActorID1,ActorID2]
