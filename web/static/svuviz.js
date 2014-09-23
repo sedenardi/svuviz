@@ -9,6 +9,29 @@ $(document).ready(function(){
   });  
 });
 
+var prepareDataset = function(obj) {
+  var actorObj = {};
+  for (var i = 0; i < obj.length; i++) {
+    for (var j = 0; j < obj[i].Appearances.length; j++) {
+      obj[i].Appearances[j].x = i;
+      if (typeof actorObj[obj[i].Appearances[j].ActorID] === 'undefined') {
+        actorObj[obj[i].Appearances[j].ActorID] = {
+          ActorID: obj[i].Appearances[j].ActorID,
+          ActorName: obj[i].Appearances[j].ActorName
+        };
+      }
+    }
+  }
+  var actorArray = [];
+  for (var actorId in actorObj) {
+    actorArray.push(actorObj[actorId]);
+  }
+  return {
+    titles: obj,
+    actors: actorArray
+  };
+};
+
 var initGraph = function() {
   dataset = prepareDataset(svuObj);
 
@@ -18,22 +41,22 @@ var initGraph = function() {
   episodeHeight = Math.floor(height / 8);
 
   xScale = d3.scale.ordinal()
-    .domain(d3.range(dataset.length))
+    .domain(d3.range(dataset.titles.length))
     .rangeBands([0, width], 0.1);
 
   yScale = d3.scale.linear()
-    .domain([0, d3.max(dataset, function(d) {
+    .domain([0, d3.max(dataset.titles, function(d) {
       return d.Appearances.length;
     })])
     .range([episodeHeight, height]);
 
   yHeight = (height - episodeHeight) / 
-    d3.max(dataset, function(d) {
+    d3.max(dataset.titles, function(d) {
       return d.Appearances.length;
     });
 
   var colorScale = d3.scale.log()
-    .domain([1, d3.max(dataset, function(d) {
+    .domain([1, d3.max(dataset.titles, function(d) {
       return d.Appearances[0].Commonalities;
     })])
     .range([1, 255]);
@@ -47,7 +70,7 @@ var initGraph = function() {
 
   var epGroups = svg.append('g')
     .selectAll('g')
-    .data(dataset)
+    .data(dataset.titles)
     .enter()
     .append('g');
 
@@ -83,7 +106,7 @@ var initGraph = function() {
 
   var appGroups = svg.append('g')
     .selectAll('g')
-    .data(dataset)
+    .data(dataset.titles)
     .enter()
     .append('g');
 
@@ -220,19 +243,6 @@ var initGraph = function() {
       });
     }
   };
-};
-
-var prepareDataset = function(obj) {
-  var dataset = [];
-  var i = 0;
-  for (var title in obj.titles) {
-    for (var j = 0; j < obj.titles[title].Appearances.length; j++) {
-      obj.titles[title].Appearances[j].x = i;
-    }
-    dataset.push(obj.titles[title]);
-    i++;
-  }
-  return dataset;
 };
 
 var getCommonTitlesString = function(param) {

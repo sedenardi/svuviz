@@ -68,8 +68,13 @@ order by t.AirDate, c.Commonalities desc;';
           CharacterID: dbRes[i].CharacterID
         });
       }
+      var tArray = [];
+      for (var titleId in titles) {
+        tArray.push(titles[titleId]);
+      }
       return {
-        titles: titles/*,
+        titles: titles,
+        tArray: tArray/*,
         actors: actors*/
       };
     };

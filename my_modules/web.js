@@ -24,7 +24,8 @@ var Web = function(config) {
   app.get('/showInfo.json', function (req, res) {
     var showInfo = queries.showInfo();
     db.query(showInfo.cmd, function(dbRes) {
-      res.json(showInfo.process(dbRes));
+      var info = showInfo.process(dbRes);
+      res.json(info.tArray);
     });
   });
 
