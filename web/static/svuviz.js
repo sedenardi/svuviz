@@ -11,8 +11,6 @@ $(document).ready(function(){
 
 var initGraph = function() {
   dataset = prepareDataset(svuObj);
-  /*var stack = d3.layout.stack();
-  stack(dataset);*/
 
   margin = 20;
   width = $(window).width() - 2*margin;
@@ -52,14 +50,7 @@ var initGraph = function() {
     .data(dataset)
     .enter()
     .append('g');
-    /*.attr('data-titleid', function(d) { return d.TitleID; })
-    .attr('data-season', function(d) { return d.Season; })
-    .attr('data-number', function(d) { return d.Number; })
-    .attr('data-title', function(d) { return d.Title; })
-    .attr('data-synopsis', function(d) { return d.Synopsis; })
-    .attr('data-airaate', function(d) { return d.AirDate; });*/
 
-  // NEED IN OWN GROUP (for )
   var episodes = epGroups.append('rect')
     .classed('episode', true)
     .attr('x', function(d, i) { return xScale(i); })
@@ -163,125 +154,72 @@ var initGraph = function() {
       }
     });
 
-    d3.selectAll('.actorClose')
-      .on('click', function(d) {
-        var parent = d3.select(this)[0][0].parentNode;
-        parent.className = parent.className.replace(' active', '')
-          .replace('active ', '').replace('active', '');
-        if (parent.id === 'actor1') {
-          rects.classed('active1', false);
-        } else if (parent.id === 'actor2') {
-          rects.classed('active2', false);
+  d3.selectAll('.actorClose')
+    .on('click', function(d) {
+      var parent = d3.select(this)[0][0].parentNode;
+      parent.className = parent.className.replace(' active', '')
+        .replace('active ', '').replace('active', '');
+      if (parent.id === 'actor1') {
+        rects.classed('active1', false);
+      } else if (parent.id === 'actor2') {
+        rects.classed('active2', false);
+      }
+      setCommonalities();
+    });
+
+  var setCommonalities = function() {
+    var both = d3.select('#actor1').classed('active') &&
+      d3.select('#actor2').classed('active');
+    var neither = !d3.select('#actor1').classed('active') &&
+      !d3.select('#actor2').classed('active');
+    rects.classed('common', false);
+    if (both) {
+      rects.classed('clickable', false);
+      var actorId1 = d3.select('#actor1').attr('data-actorid');
+      var actorName1 = d3.select('#actor1 .actorName').text();
+      var actorId2 = d3.select('#actor2').attr('data-actorid');
+      var actorName2 = d3.select('#actor2 .actorName').text();
+      $.ajax({
+        url: '/getCommonTitles.json',
+        type: 'GET',
+        dataType: 'json',
+        data: { ActorID1: actorId1, ActorID2: actorId2 },
+        success: function(response) {
+          var commonTitlesString = getCommonTitlesString({
+            data: response,
+            actorId1: actorId1,
+            actorName1: actorName1,
+            actorId2: actorId2,
+            actorName2: actorName2
+          });
+          d3.select('#commonModalBody').html(commonTitlesString);
         }
-        setCommonalities();
       });
-
-    var setCommonalities = function() {
-      var both = d3.select('#actor1').classed('active') &&
-        d3.select('#actor2').classed('active');
-      var neither = !d3.select('#actor1').classed('active') &&
-        !d3.select('#actor2').classed('active');
-      rects.classed('common', false);
-      if (both) {
-        rects.classed('clickable', false);
-        var actorId1 = d3.select('#actor1').attr('data-actorid');
-        var actorName1 = d3.select('#actor1 .actorName').text();
-        var actorId2 = d3.select('#actor2').attr('data-actorid');
-        var actorName2 = d3.select('#actor2 .actorName').text();
-        $.ajax({
-          url: '/getCommonTitles.json',
-          type: 'GET',
-          dataType: 'json',
-          data: { ActorID1: actorId1, ActorID2: actorId2 },
-          success: function(response) {
-            var commonTitlesString = getCommonTitlesString({
-              data: response,
-              actorId1: actorId1,
-              actorName1: actorName1,
-              actorId2: actorId2,
-              actorName2: actorName2
-            });
-            d3.select('#commonModalBody').html(commonTitlesString);
+      d3.select('#modalActor1').text(actorName1);
+      d3.select('#modalActor2').text(actorName2);
+      $('#commonModal').modal('show');
+    } else if (neither) {
+      rects.classed('clickable', true);
+    } else {
+      rects.classed('clickable', false);
+      var actorId = d3.select('#actor1').classed('active') ? 
+        d3.select('#actor1').attr('data-actorid') :
+        d3.select('#actor2').attr('data-actorid');
+      $.ajax({
+        url: '/getCommonActors.json',
+        type: 'GET',
+        dataType: 'json',
+        data: { ActorID: actorId },
+        success: function(response) {
+          for (var i = 0; i < response.length; i++) {
+            d3.selectAll('rect[data-actorid="' + response[i] + '"]')
+              .classed('common', true)
+              .classed('clickable', true);
           }
-        });
-        d3.select('#modalActor1').text(actorName1);
-        d3.select('#modalActor2').text(actorName2);
-        $('#commonModal').modal('show');
-      } else if (neither) {
-        rects.classed('clickable', true);
-      } else {
-        rects.classed('clickable', false);
-        var actorId = d3.select('#actor1').classed('active') ? 
-          d3.select('#actor1').attr('data-actorid') :
-          d3.select('#actor2').attr('data-actorid');
-        $.ajax({
-          url: '/getCommonActors.json',
-          type: 'GET',
-          dataType: 'json',
-          data: { ActorID: actorId },
-          success: function(response) {
-            for (var i = 0; i < response.length; i++) {
-              d3.selectAll('rect[data-actorid="' + response[i] + '"]')
-                .classed('common', true)
-                .classed('clickable', true);
-            }
-          }
-        });
-      }
-    };
-
-    var getCommonTitlesString = function(param) {
-      var common = '<div class="row commonHeader">' +
-        '<div class="col-xs-4"><h4>' + param.actorName1 + '</h4></div>' + 
-        '<div class="col-xs-4"><h4>Title</h4></div>' + 
-        '<div class="col-xs-4"><h4>' + param.actorName2 + '</h4></div></div>';
-      var tv = '', movies = '';
-      var processed = processCommonResults(param.data);
-      for (var i = 0; i < processed.svu.length; i++) {
-        tv += '<div class="row commonRow">' +
-          '<div class="col-xs-4">' + processed.svu[i].Character1 + '</div>' + 
-          '<div class="col-xs-4">SVU (' + processed.svu[i].Episodes + ' episodes)</div>' + 
-          '<div class="col-xs-4">' + processed.svu[i].Character2 + '</div></div>';
-      }
-      for (var i = 0; i < processed.tv.length; i++) {
-        tv += '<div class="row commonRow">' +
-          '<div class="col-xs-4">' + processed.tv[i].Character1 + '</div>' + 
-          '<div class="col-xs-4">' + processed.tv[i].Title + 
-          ' (' + processed.tv[i].Episodes + ' episodes)</div>' + 
-          '<div class="col-xs-4">' + processed.tv[i].Character2 + '</div></div>';
-      }
-      for (var i = 0; i < processed.movies.length; i++) {
-        movies += '<div class="row commonRow">' +
-          '<div class="col-xs-4">' + processed.movies[i].Character1 + '</div>' + 
-          '<div class="col-xs-4">' + processed.movies[i].Title + '</div>' + 
-          '<div class="col-xs-4">' + processed.movies[i].Character2 + '</div></div>';
-      }
-      if (tv) {
-        common += '<h4>TV Shows</h4>' + tv;
-      }
-      if (movies) {
-        common += '<h4>Movies</h4>' + movies;
-      }
-      return common;
-    };
-
-    var processCommonResults = function(data) {
-      var svu = [], movies = [], tv = [];
-      for (var i = 0; i < data.length; i++) {
-        if (data[i].TitleID === 'tt0203259') {
-          svu.push(data[i]);
-        } else if (data[i].TV) {
-          tv.push(data[i]);
-        } else {
-          movies.push(data[i]);
         }
-      }
-      return {
-        svu: svu,
-        movies: movies,
-        tv: tv
-      };
-    };
+      });
+    }
+  };
 };
 
 var prepareDataset = function(obj) {
@@ -295,4 +233,84 @@ var prepareDataset = function(obj) {
     i++;
   }
   return dataset;
+};
+
+var getCommonTitlesString = function(param) {
+  var common = '<div class="row commonHeader">' +
+    '<div class="col-xs-4"><h4>' + getActorLink(param.actorId1,param.actorName1) + 
+    '</h4></div><div class="col-xs-4"><h4>Title</h4></div>' + 
+    '<div class="col-xs-4"><h4>' + getActorLink(param.actorId2,param.actorName2) + '</h4></div></div>';
+  var tv = '', movies = '';
+  var processed = processCommonResults(param.data);
+  for (var i = 0; i < processed.svu.length; i++) {
+    tv += '<div class="row commonRow">' +
+      '<div class="col-xs-4">' + getCharacterLink(processed.svu[i].CharacterID1,processed.svu[i].Character1) + 
+      '</div><div class="col-xs-4">' + getTitleLink('tt0203259','SVU') + ' (' + processed.svu[i].Episodes + ' episodes)</div>' + 
+      '<div class="col-xs-4">' + getCharacterLink(processed.svu[i].CharacterID2,processed.svu[i].Character2) + '</div></div>';
+  }
+  for (var i = 0; i < processed.tv.length; i++) {
+    tv += '<div class="row commonRow">' +
+      '<div class="col-xs-4">' + getCharacterLink(processed.tv[i].CharacterID1,processed.tv[i].Character1) + 
+      '</div><div class="col-xs-4">' + getTitleLink(processed.tv[i].TitleID,processed.tv[i].Title) + 
+      ' (' + processed.tv[i].Episodes + ' episodes)</div>' + 
+      '<div class="col-xs-4">' + getCharacterLink(processed.tv[i].CharacterID2,processed.tv[i].Character2) + '</div></div>';
+  }
+  for (var i = 0; i < processed.movies.length; i++) {
+    movies += '<div class="row commonRow">' +
+      '<div class="col-xs-4">' + getCharacterLink(processed.movies[i].CharacterID1,processed.movies[i].Character1) + 
+      '</div><div class="col-xs-4">' + getTitleLink(processed.movies[i].TitleID,processed.movies[i].Title) + '</div>' + 
+      '<div class="col-xs-4">' + getCharacterLink(processed.movies[i].CharacterID2,processed.movies[i].Character2) + '</div></div>';
+  }
+  if (tv) {
+    common += '<h4>TV Shows</h4>' + tv;
+  }
+  if (movies) {
+    common += '<h4>Movies</h4>' + movies;
+  }
+  return common;
+};
+
+var processCommonResults = function(data) {
+  var svu = [], movies = [], tv = [];
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].TitleID === 'tt0203259') {
+      svu.push(data[i]);
+    } else if (data[i].TV) {
+      tv.push(data[i]);
+    } else {
+      movies.push(data[i]);
+    }
+  }
+  return {
+    svu: svu,
+    movies: movies,
+    tv: tv
+  };
+};
+
+var getActorLink = function(id, name) {
+  if (typeof id === 'string') {
+    return '<a class="actorLink" href="http://www.imdb.com/name/' + 
+      id + '/" target="_blank">' + name + '</a>';
+  } else {
+    return name;
+  }
+};
+
+var getTitleLink = function(id, name) {
+  if (typeof id === 'string') {
+    return '<a class="titleLink" href="http://www.imdb.com/title/' + 
+      id + '/" target="_blank">' + name + '</a>';
+  } else {
+    return name;
+  }
+};
+
+var getCharacterLink = function(id, name) {
+  if (typeof id === 'string') {
+    return '<a class="characterLink" href="http://www.imdb.com/character/' + 
+      id + '/" target="_blank">' + name + '</a>';
+  } else {
+    return name;
+  }
 };
