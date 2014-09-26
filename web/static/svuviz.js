@@ -5,17 +5,27 @@ $(document).ready(function(){
     success: function(data) {
       svuObj = data;
       initGraph();
+      setupSearch();
     }
   });  
 });
 
 var prepareDataset = function(obj) {
-  var actorObj = {};
+  var actorObj = {}, characterObj = {};
   for (var i = 0; i < obj.length; i++) {
     for (var j = 0; j < obj[i].Appearances.length; j++) {
       obj[i].Appearances[j].x = i;
       if (typeof actorObj[obj[i].Appearances[j].ActorID] === 'undefined') {
         actorObj[obj[i].Appearances[j].ActorID] = {
+          ActorID: obj[i].Appearances[j].ActorID,
+          ActorName: obj[i].Appearances[j].ActorName
+        };
+      }
+      var characterKey = obj[i].Appearances[j].ActorID + ':' + 
+        obj[i].Appearances[j].Character;
+      if (typeof characterObj[characterKey] === 'undefined') {
+        characterObj[characterKey] = {
+          Character: obj[i].Appearances[j].Character,
           ActorID: obj[i].Appearances[j].ActorID,
           ActorName: obj[i].Appearances[j].ActorName
         };
@@ -26,10 +36,67 @@ var prepareDataset = function(obj) {
   for (var actorId in actorObj) {
     actorArray.push(actorObj[actorId]);
   }
+  var characterArray = [];
+  for (var characterKey in characterObj) {
+    characterArray.push(characterObj[characterKey]);
+  }
   return {
     titles: obj,
-    actors: actorArray
+    actors: actorArray,
+    characters: characterArray
   };
+};
+
+var setupSearch = function() {
+  var actors = new Bloodhound({
+    datumTokenizer: function(d) { 
+      return Bloodhound.tokenizers.whitespace(d.ActorName); 
+    },
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    limit: 10,
+    local: dataset.actors
+  });
+   
+  actors.initialize();
+
+  $('#actorInput').typeahead(null, {
+    name: 'actors',
+    displayKey: 'actor',
+    source: actors.ttAdapter(),
+    templates: {
+      suggestion: function(d) {
+        return '<p class="searchItem">' + d.ActorName + '</p>';
+      }
+    }
+  }).bind('typeahead:selected', function (obj, datum){
+    console.log(datum);
+    $('#actorInput').blur();
+  });
+
+  var characters = new Bloodhound({
+    datumTokenizer: function(d) { 
+      return Bloodhound.tokenizers.whitespace(d.Character); 
+    },
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    limit: 10,
+    local: dataset.characters
+  });
+   
+  characters.initialize();
+
+  $('#characterInput').typeahead(null, {
+    name: 'characters',
+    displayKey: 'character',
+    source: characters.ttAdapter(),
+    templates: {
+      suggestion: function(d) {
+        return '<p class="searchItem">' + d.Character + '</p>';
+      }
+    }
+  }).bind('typeahead:selected', function (obj, datum){
+    console.log(datum);
+    $('#characterInput').blur();
+  });
 };
 
 var initGraph = function() {
