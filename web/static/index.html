@@ -67,7 +67,7 @@ rect.common {
   margin: 4px 0;
 }
 .row-centered {
-  display: inline;
+  display: block;
   height: 28px;
   text-align:center;
 }
@@ -80,13 +80,11 @@ rect.common {
   margin-right:-4px;
 }
 #actorInput {
-  display: inline;
-  float: left;
+  display: block;
   width: 170px;
 }
 #characterInput {
-  display: inline;
-  float: right;
+  display: block;
   width: 170px;
 }
 .actor {
@@ -173,6 +171,7 @@ rect.common {
   <body> 
     <div id="top">
       <input type="text" class="form-control" id="actorInput" placeholder="Search actors...">
+      <input type="text" class="form-control" id="characterInput" placeholder="Search characters...">
       <div class="row-centered">
         <div class="col-xs-2 col-centered">
           <div id="actor1" class="actor">
@@ -187,7 +186,6 @@ rect.common {
           </div>
         </div>
       </div>
-      <input type="text" class="form-control" id="characterInput" placeholder="Search characters...">
     </div>
     <div id="main"></div>
     <div id="appearanceTooltip" class="hoverTooltip hidden">

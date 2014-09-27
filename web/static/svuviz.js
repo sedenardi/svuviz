@@ -7,7 +7,17 @@ $(document).ready(function(){
       initGraph();
       setupSearch();
     }
-  });  
+  });
+
+  // jQuery -> D3 click (from http://stackoverflow.com/a/11180172/3311526)
+  jQuery.fn.d3Click = function () {
+    this.each(function (i, e) {
+      var evt = document.createEvent("MouseEvents");
+      evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+
+      e.dispatchEvent(evt);
+    });
+  };
 });
 
 var prepareDataset = function(obj) {
@@ -48,6 +58,12 @@ var prepareDataset = function(obj) {
 };
 
 var setupSearch = function() {
+  var actorSearch = function(actorId) {
+    if ($('.actor.active').length < 2) {
+      $('.appearance[data-actorid="' + actorId + '"]:first').d3Click();
+    }
+  };
+
   var actors = new Bloodhound({
     datumTokenizer: function(d) { 
       return Bloodhound.tokenizers.whitespace(d.ActorName); 
@@ -69,7 +85,7 @@ var setupSearch = function() {
       }
     }
   }).bind('typeahead:selected', function (obj, datum){
-    console.log(datum);
+    actorSearch(datum.ActorID);
     $('#actorInput').blur();
   });
 
@@ -94,7 +110,7 @@ var setupSearch = function() {
       }
     }
   }).bind('typeahead:selected', function (obj, datum){
-    console.log(datum);
+    actorSearch(datum.ActorID);
     $('#characterInput').blur();
   });
 };
