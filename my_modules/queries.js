@@ -238,6 +238,29 @@ group by TitleID,Title,TV,a1.Character,a1.CharacterID,a2.Character,a2.CharacterI
     };
   };
 
+  this.getActorInfo = function(ActorID) {
+    var sql = '\
+select \
+  app.ActorID \
+, app.`Character` as `Character` \
+, app.CharacterID \
+, coalesce(pt.TitleID,t.TitleID) as TitleID \
+, coalesce(pt.Title,t.Title) as Title \
+, case when t.ParentTitleID is null then false else true end as TV \
+, count(1) as Episodes \
+from Appearances app \
+  inner join Titles t \
+    on t.TitleID = app.TitleID \
+  left outer join Titles pt \
+    on pt.TitleID = t.ParentTitleID \
+where app.ActorID = ? \
+group by ActorID,`Character`,CharacterID,TitleID,Title;';
+    return {
+      sql: sql,
+      inserts: [ActorID]
+    };
+  };
+
 };
 
 module.exports = new queries();

@@ -96,6 +96,16 @@ var Web = function(config) {
     });
   });
 
+  app.get('/getActorInfo.json', function (req, res) {
+    if (typeof req.query.ActorID === 'undefined') {
+      res.json(402, { error: 'Must specify ActorID.'});
+    }
+    var query = queries.getActorInfo(req.query.ActorID);
+    db.query(query, function(dbRes) {
+      res.json(dbRes);
+    });
+  });
+
   this.startServer = function() {
     db.connect('Express', function webDB() {
       app.listen(config.web.port, function webStarted() {

@@ -120,7 +120,7 @@ var initGraph = function() {
 
   margin = 20;
   width = $(window).width() - 2*margin;
-  height = $(window).height() - 2*margin - 4 - $('#main').offset().top;
+  height = $(window).height() - 2*margin - 4 - $('#main').offset().top + 60;
   episodeHeight = Math.floor(height / 8);
 
   xScale = d3.scale.ordinal()
@@ -273,6 +273,26 @@ var initGraph = function() {
       setCommonalities();
     });
 
+  d3.selectAll('.actor')
+    .on('click', function(d) {
+      var actorId = d3.select(this).attr('data-actorid');
+      var actorName = d3.select('.actor.active[data-actorid="' + actorId + '"] .actorName').text();
+      $.ajax({
+        url: '/getActorInfo.json',
+        type: 'GET',
+        dataType: 'json',
+        data: { ActorID: actorId },
+        success: function(response) {
+          var modalBody = getActorModalBody({
+            data: response
+          });
+          d3.select('#actorModalBody').html(modalBody);
+        }
+      });
+      d3.select('#modalActor').html(getActorLink(actorId, actorName));
+      $('#actorModal').modal('show');
+    });
+
   var setCommonalities = function() {
     var both = d3.select('#actor1').classed('active') &&
       d3.select('#actor2').classed('active');
@@ -291,7 +311,7 @@ var initGraph = function() {
         dataType: 'json',
         data: { ActorID1: actorId1, ActorID2: actorId2 },
         success: function(response) {
-          var commonTitlesString = getCommonTitlesString({
+          var commonTitlesString = getCommonModalBody({
             data: response,
             actorId1: actorId1,
             actorName1: actorName1,
@@ -301,8 +321,8 @@ var initGraph = function() {
           d3.select('#commonModalBody').html(commonTitlesString);
         }
       });
-      d3.select('#modalActor1').text(actorName1);
-      d3.select('#modalActor2').text(actorName2);
+      d3.select('#commonModalActor1').text(actorName1);
+      d3.select('#commonModalActor2').text(actorName2);
       $('#commonModal').modal('show');
     } else if (neither) {
       rects.classed('clickable', true);
@@ -328,13 +348,42 @@ var initGraph = function() {
   };
 };
 
-var getCommonTitlesString = function(param) {
+var getActorModalBody = function(param) {
+  var common = '';
+  var tv = '', movies = '';
+  var processed = processModalResults(param.data);
+  for (var i = 0; i < processed.svu.length; i++) {
+    tv += '<div class="row commonRow">' +
+      '<div class="col-xs-6">' + getCharacterLink(processed.svu[i].CharacterID,processed.svu[i].Character) + 
+      '</div><div class="col-xs-6">' + getTitleLink('tt0203259','SVU') + ' (' + processed.svu[i].Episodes + ' episodes)</div></div>';
+  }
+  for (var i = 0; i < processed.tv.length; i++) {
+    tv += '<div class="row commonRow">' +
+      '<div class="col-xs-6">' + getCharacterLink(processed.tv[i].CharacterID,processed.tv[i].Character) + 
+      '</div><div class="col-xs-6">' + getTitleLink(processed.tv[i].TitleID,processed.tv[i].Title) + 
+      ' (' + processed.tv[i].Episodes + ' episodes)</div></div>';
+  }
+  for (var i = 0; i < processed.movies.length; i++) {
+    movies += '<div class="row commonRow">' +
+      '<div class="col-xs-6">' + getCharacterLink(processed.movies[i].CharacterID,processed.movies[i].Character) + 
+      '</div><div class="col-xs-6">' + getTitleLink(processed.movies[i].TitleID,processed.movies[i].Title) + '</div></div>';
+  }
+  if (tv) {
+    common += '<h4>TV Shows</h4>' + tv;
+  }
+  if (movies) {
+    common += '<h4>Movies</h4>' + movies;
+  }
+  return common;
+};
+
+var getCommonModalBody = function(param) {
   var common = '<div class="row commonHeader">' +
     '<div class="col-xs-4"><h4>' + getActorLink(param.actorId1,param.actorName1) + 
     '</h4></div><div class="col-xs-4"><h4>Title</h4></div>' + 
     '<div class="col-xs-4"><h4>' + getActorLink(param.actorId2,param.actorName2) + '</h4></div></div>';
   var tv = '', movies = '';
-  var processed = processCommonResults(param.data);
+  var processed = processModalResults(param.data);
   for (var i = 0; i < processed.svu.length; i++) {
     tv += '<div class="row commonRow">' +
       '<div class="col-xs-4">' + getCharacterLink(processed.svu[i].CharacterID1,processed.svu[i].Character1) + 
@@ -363,7 +412,7 @@ var getCommonTitlesString = function(param) {
   return common;
 };
 
-var processCommonResults = function(data) {
+var processModalResults = function(data) {
   var svu = [], movies = [], tv = [];
   for (var i = 0; i < data.length; i++) {
     if (data[i].TitleID === 'tt0203259') {
