@@ -244,17 +244,22 @@ select \
   app.ActorID \
 , app.`Character` as `Character` \
 , app.CharacterID \
-, coalesce(pt.TitleID,t.TitleID) as TitleID \
+, coalesce(t.ParentTitleID,app.TitleID) as TitleID \
 , coalesce(pt.Title,t.Title) as Title \
 , case when t.ParentTitleID is null then false else true end as TV \
-, count(1) as Episodes \
+, count(distinct t.TitleID) as Episodes \
+, count(distinct app2.ActorID) as Commonalities \
 from Appearances app \
+  inner join Appearances app2 \
+    on app2.TitleID = app.TitleID \
   inner join Titles t \
     on t.TitleID = app.TitleID \
   left outer join Titles pt \
     on pt.TitleID = t.ParentTitleID \
 where app.ActorID = ? \
-group by ActorID,`Character`,CharacterID,TitleID,Title;';
+and app2.ActorID <> app.ActorID \
+group by app.ActorID,`Character`,CharacterID,TitleID,Title \
+order by Commonalities desc;';
     return {
       sql: sql,
       inserts: [ActorID]
