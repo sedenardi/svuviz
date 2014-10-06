@@ -30,7 +30,7 @@ from svumap.Titles t \
         from svumap.Appearances app1 \
           inner join svumap.Titles t \
             on t.TitleID = app1.TitleID \
-            and t.ParentTitleID <> \'tt0203259\' \
+            and coalesce(t.ParentTitleID,\'\') <> \'tt0203259\' \
           inner join svumap.Appearances app2 \
             on app2.TitleID = app1.TitleID \
             and app2.ActorID <> app1.ActorID) c \
