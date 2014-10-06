@@ -3,7 +3,7 @@ $(document).ready(function(){
     url: 'showInfo.json',
     cache: true,
     success: function(data) {
-      svuObj = data;
+      prepareDataset(data);
       initGraph();
       setupSearch();
     }
@@ -21,39 +21,44 @@ $(document).ready(function(){
 });
 
 var prepareDataset = function(obj) {
-  var actorObj = {}, characterObj = {};
+  var searchObj = {};
   for (var i = 0; i < obj.length; i++) {
     for (var j = 0; j < obj[i].Appearances.length; j++) {
       obj[i].Appearances[j].x = i;
-      if (typeof actorObj[obj[i].Appearances[j].ActorID] === 'undefined') {
-        actorObj[obj[i].Appearances[j].ActorID] = {
-          ActorID: obj[i].Appearances[j].ActorID,
-          ActorName: obj[i].Appearances[j].ActorName
+      var actorId = obj[i].Appearances[j].ActorID;
+      var character = obj[i].Appearances[j].Character;
+      if (typeof searchObj[actorId] === 'undefined') {
+        searchObj[actorId] = {
+          ActorID: actorId,
+          ActorName: obj[i].Appearances[j].ActorName,
+          Characters: {}
         };
-      }
-      var characterKey = obj[i].Appearances[j].ActorID + ':' + 
-        obj[i].Appearances[j].Character;
-      if (typeof characterObj[characterKey] === 'undefined') {
-        characterObj[characterKey] = {
-          Character: obj[i].Appearances[j].Character,
-          ActorID: obj[i].Appearances[j].ActorID,
-          ActorName: obj[i].Appearances[j].ActorName
-        };
+        searchObj[actorId].Characters[character] = '';
+      } else {
+        if (typeof searchObj[actorId].Characters[character] === 'undefined') {
+          searchObj[actorId].Characters[character] = '';
+        }
       }
     }
   }
-  var actorArray = [];
-  for (var actorId in actorObj) {
-    actorArray.push(actorObj[actorId]);
+  var searchArray = [];
+  for (var actorId in searchObj) {
+    var characters = [];
+    for (var character in searchObj[actorId].Characters) {
+      characters.push(character);
+    }
+    var charStr = characters.join(', ');
+    searchArray.push({
+      ActorID: actorId,
+      ActorName: searchObj[actorId].ActorName,
+      Characters: charStr
+    });
+    searchObj[actorId].Characters = charStr;
   }
-  var characterArray = [];
-  for (var characterKey in characterObj) {
-    characterArray.push(characterObj[characterKey]);
-  }
-  return {
+  dataset = {
     titles: obj,
-    actors: actorArray,
-    characters: characterArray
+    searchObj: searchObj,
+    searchArray: searchArray
   };
 };
 
@@ -64,63 +69,53 @@ var setupSearch = function() {
     }
   };
 
-  var actors = new Bloodhound({
-    datumTokenizer: function(d) { 
-      return Bloodhound.tokenizers.whitespace(d.ActorName); 
-    },
+  search = new Bloodhound({
+    datumTokenizer: Bloodhound.tokenizers.obj.whitespace('ActorName', 'Characters'),
     queryTokenizer: Bloodhound.tokenizers.whitespace,
     limit: 10,
-    local: dataset.actors
+    local: dataset.searchArray
   });
    
-  actors.initialize();
+  search.initialize();
 
-  $('#actorInput').typeahead(null, {
-    name: 'actors',
-    displayKey: 'actor',
-    source: actors.ttAdapter(),
+  $('#searchInput').typeahead({
+    highlight: true
+  }, 
+  {
+    name: 'search',
+    source: search.ttAdapter(),
     templates: {
       suggestion: function(d) {
-        return '<p class="searchItem">' + d.ActorName + '</p>';
+        return '<div class="searchActorName">' + 
+          d.ActorName + '</div>' + 
+          '<div class="searchCharacterName">' + 
+          d.Characters + '</div>';
       }
     }
   }).bind('typeahead:selected', function (obj, datum){
     actorSearch(datum.ActorID);
-    $('#actorInput').blur();
-  });
-
-  var characters = new Bloodhound({
-    datumTokenizer: function(d) { 
-      return Bloodhound.tokenizers.whitespace(d.Character); 
-    },
-    queryTokenizer: Bloodhound.tokenizers.whitespace,
-    limit: 10,
-    local: dataset.characters
-  });
-   
-  characters.initialize();
-
-  $('#characterInput').typeahead(null, {
-    name: 'characters',
-    displayKey: 'character',
-    source: characters.ttAdapter(),
-    templates: {
-      suggestion: function(d) {
-        return '<p class="searchItem">' + d.Character + '</p>';
-      }
-    }
-  }).bind('typeahead:selected', function (obj, datum){
-    actorSearch(datum.ActorID);
-    $('#characterInput').blur();
+    $('#searchInput').blur();
   });
 };
 
-var initGraph = function() {
-  dataset = prepareDataset(svuObj);
+var changeSearch = function(actors) {
+  var searchData = [];
+  if (actors) {
+    for (var i = 0; i < actors.length; i++) {
+      searchData.push(dataset.searchObj[actors[i]]);
+    }
+  } else {
+    searchData = dataset.searchArray;
+  }
+  search.clear();
+  search.local = searchData;
+  search.initialize(true);
+}
 
+var initGraph = function() {
   margin = 20;
   width = $(window).width() - 2*margin;
-  height = $(window).height() - 2*margin - 4 - $('#main').offset().top + 60;
+  height = $(window).height() - 2*margin - 4 - $('#main').offset().top;
   episodeHeight = Math.floor(height / 8);
 
   xScale = d3.scale.ordinal()
@@ -276,6 +271,9 @@ var initGraph = function() {
   d3.selectAll('.actor')
     .on('click', function(d) {
       var actorId = d3.select(this).attr('data-actorid');
+      if (!d3.select('.actor.active[data-actorid="' + actorId + '"] .actorName')[0][0]) {
+        return;
+      }
       var actorName = d3.select('.actor.active[data-actorid="' + actorId + '"] .actorName').text();
       $.ajax({
         url: '/getActorInfo.json',
@@ -326,6 +324,7 @@ var initGraph = function() {
       $('#commonModal').modal('show');
     } else if (neither) {
       rects.classed('clickable', true);
+      changeSearch();
     } else {
       rects.classed('clickable', false);
       var actorId = d3.select('#actor1').classed('active') ? 
@@ -342,6 +341,7 @@ var initGraph = function() {
               .classed('common', true)
               .classed('clickable', true);
           }
+          changeSearch(response);
         }
       });
     }
