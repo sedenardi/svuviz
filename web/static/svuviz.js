@@ -104,6 +104,9 @@ var changeSearch = function(actors) {
   var searchData = [];
   if (actors) {
     for (var i = 0; i < actors.length; i++) {
+      if (typeof dataset.searchObj[actors[i]] === 'undefined') {
+        console.log(actors[i]);
+      }
       searchData.push(dataset.searchObj[actors[i]]);
     }
   } else {
@@ -239,21 +242,7 @@ var initGraph = function() {
     })
     .on('click', function(d) {
       if (d3.select(this).classed('clickable')) {
-        var actor = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
-        if (!d3.select('#actor1').classed('active')) {
-          d3.select('#actor1')
-            .attr('data-actorid', d.ActorID)
-            .classed('active', true);
-          d3.select('#actor1 .actorName').text(d.ActorName);
-          actor.classed('active1', true);
-        } else if (!d3.select('#actor2').classed('active')) {
-          d3.select('#actor2')
-            .attr('data-actorid', d.ActorID)
-            .classed('active', true);
-          d3.select('#actor2 .actorName').text(d.ActorName);
-          actor.classed('active2', true);
-        }
-        setCommonalities();
+        appearanceClicked(d, this);
       }
     });
 
@@ -293,6 +282,25 @@ var initGraph = function() {
       $('#actorModal').modal('show');
     });
 
+  var appearanceClicked = function(d, ele) {
+    var actor = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
+    if (!d3.select('#actor1').classed('active')) {
+      d3.select('#actor1')
+        .attr('data-actorid', d.ActorID)
+        .classed('active', true);
+      d3.select('#actor1 .actorName').text(d.ActorName);
+      actor.classed('active1', true);
+    } else if (!d3.select('#actor2').classed('active')) {
+      d3.select('#actor2')
+        .attr('data-actorid', d.ActorID)
+        .classed('active', true);
+      d3.select('#actor2 .actorName').text(d.ActorName);
+      actor.classed('active2', true);
+    }
+    
+    setCommonalities();
+  };
+
   var setCommonalities = function() {
     var both = d3.select('#actor1').classed('active') &&
       d3.select('#actor2').classed('active');
@@ -300,54 +308,60 @@ var initGraph = function() {
       !d3.select('#actor2').classed('active');
     rects.classed('common', false);
     if (both) {
-      rects.classed('clickable', false);
-      var actorId1 = d3.select('#actor1').attr('data-actorid');
-      var actorName1 = d3.select('#actor1 .actorName').text();
-      var actorId2 = d3.select('#actor2').attr('data-actorid');
-      var actorName2 = d3.select('#actor2 .actorName').text();
-      $.ajax({
-        url: '/getCommonTitles.json',
-        type: 'GET',
-        dataType: 'json',
-        data: { ActorID1: actorId1, ActorID2: actorId2 },
-        success: function(response) {
-          var commonTitlesString = getCommonModalBody({
-            data: response,
-            actorId1: actorId1,
-            actorName1: actorName1,
-            actorId2: actorId2,
-            actorName2: actorName2
-          });
-          d3.select('#commonModalBody').html(commonTitlesString);
-        }
-      });
-      d3.select('#commonModalActor1').text(actorName1);
-      d3.select('#commonModalActor2').text(actorName2);
-      $('#commonModal').modal('show');
+      showCommonModal();
     } else if (neither) {
       rects.classed('clickable', true);
       changeSearch();
     } else {
-      rects.classed('clickable', false);
-      var actorId = d3.select('#actor1').classed('active') ? 
-        d3.select('#actor1').attr('data-actorid') :
-        d3.select('#actor2').attr('data-actorid');
-      $.ajax({
-        url: '/getCommonActors.json',
-        type: 'GET',
-        dataType: 'json',
-        data: { ActorID: actorId },
-        success: function(response) {
-          for (var i = 0; i < response.length; i++) {
-            d3.selectAll('rect[data-actorid="' + response[i] + '"]')
-              .classed('common', true)
-              .classed('clickable', true);
-          }
-          changeSearch(response);
-        }
-      });
+      getCommonActors();
     }
   };
+};
+
+var getCommonActors = function() {
+  var actorId = d3.select('#actor1').classed('active') ? 
+    d3.select('#actor1').attr('data-actorid') :
+    d3.select('#actor2').attr('data-actorid');
+  $.ajax({
+    url: '/getCommonActors.json',
+    type: 'GET',
+    dataType: 'json',
+    data: { ActorID: actorId },
+    success: function(response) {
+      for (var i = 0; i < response.length; i++) {
+        d3.selectAll('rect[data-actorid="' + response[i] + '"]')
+          .classed('common', true)
+          .classed('clickable', true);
+      }
+      changeSearch(response);
+    }
+  });
+};
+
+var showCommonModal = function() {
+  var actorId1 = d3.select('#actor1').attr('data-actorid');
+  var actorName1 = d3.select('#actor1 .actorName').text();
+  var actorId2 = d3.select('#actor2').attr('data-actorid');
+  var actorName2 = d3.select('#actor2 .actorName').text();
+  $.ajax({
+    url: '/getCommonTitles.json',
+    type: 'GET',
+    dataType: 'json',
+    data: { ActorID1: actorId1, ActorID2: actorId2 },
+    success: function(response) {
+      var commonTitlesString = getCommonModalBody({
+        data: response,
+        actorId1: actorId1,
+        actorName1: actorName1,
+        actorId2: actorId2,
+        actorName2: actorName2
+      });
+      d3.select('#commonModalBody').html(commonTitlesString);
+    }
+  });
+  d3.select('#commonModalActor1').text(actorName1);
+  d3.select('#commonModalActor2').text(actorName2);
+  $('#commonModal').modal('show');
 };
 
 var getActorModalBody = function(param) {
