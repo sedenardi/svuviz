@@ -262,13 +262,19 @@ var initGraph = function() {
   d3.selectAll('.actorClose')
     .on('click', function(d) {
       var parent = d3.select(this)[0][0].parentNode;
-      parent.className = parent.className.replace(' active', '')
-        .replace('active ', '').replace('active', '');
+      d3.select(parent).classed('active', false);
+      /*parent.className = parent.className.replace(' active', '')
+        .replace('active ', '').replace('active', '');*/
       if (parent.id === 'actor1') {
         rects.classed('active1', false);
       } else if (parent.id === 'actor2') {
         rects.classed('active2', false);
       }
+
+      var actorId = d3.select(parent).attr('data-actorid');
+      d3.selectAll('.clicked[data-actorid="' + actorId + '"]')
+        .remove();
+
       setCommonalities();
     });
 
@@ -295,6 +301,7 @@ var initGraph = function() {
       $('#actorModal').modal('show');
     });
 
+  var scaleFactor = 3;
   var appearanceClicked = function(d, ele) {
     var actors = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
     if (!d3.select('#actor1').classed('active')) {
@@ -309,16 +316,16 @@ var initGraph = function() {
         .classed('active', true);
       d3.select('#actor2 .actorName').text(d.ActorName);
       actors.classed('active2', true);
-    }    
+    }
     setCommonalities();
-    /*actors.each(function(d,i) {
-      var x = d3.select(this).attr('x'),
-          y = d3.select(this).attr('y'),
-          w = d3.select(this).attr('width'),
-          h = d3.select(this).attr('height'),
+    actors.each(function(d,i) {
+      var x = parseFloat(d3.select(this).attr('x')),
+          y = parseFloat(d3.select(this).attr('y')),
+          w = parseFloat(d3.select(this).attr('width')),
+          h = parseFloat(d3.select(this).attr('height')),
           cls = d3.select(this).classed('active1') ? 
             'active1' : 'active2';
-      svg.append('rect')
+      var clicked = svg.append('rect')
         .attr('x', x)
         .attr('y', y)
         .attr('height', h)
@@ -327,7 +334,13 @@ var initGraph = function() {
         .classed('appearance', true)
         .classed('clicked', true)
         .classed(cls, true);
-    });*/
+      clicked.transition()
+        .ease('linear')
+        .attr('x', x - w/scaleFactor)
+        .attr('y', y - h/scaleFactor)
+        .attr('height', h + h*2/scaleFactor)
+        .attr('width', w + w*2/scaleFactor);
+    });
   };
 
   var setCommonalities = function() {
