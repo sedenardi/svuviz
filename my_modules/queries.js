@@ -204,7 +204,13 @@ where a1.ActorID = ? \
 and not exists \
   (select 1 from Titles t \
   where t.TitleID = a1.TitleID \
-  and t.ParentTitleID = \'tt0203259\');';
+  and t.ParentTitleID = \'tt0203259\') \
+and exists \
+  (select 1 from Appearances app \
+    inner join Titles t \
+      on t.TitleID = app.TitleID \
+  where a2.ActorID = app.ActorID \
+    and t.ParentTitleID = \'tt0203259\');';
     return {
       sql: sql,
       inserts: [ActorID]
