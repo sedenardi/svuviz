@@ -210,11 +210,16 @@ var initGraph = function() {
     .classed('clickable', true)
     .on('mouseenter', function(d) {
       if (d3.select(this).classed('clickable')) {
-        var actor = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
+        var actors = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
         if (!d3.select('#actor1').classed('active')) {
-          actor.classed('hover1', true);
+          actors.classed('hover1', true);
         } else if (!d3.select('#actor2').classed('active')) {
-          actor.classed('hover2', true);
+          actors.classed('hover2', true);
+        }
+
+        if (d3.select(this).classed('common')) {
+          actors.classed('wasCommon', true)
+            .classed('common', false);
         }
 
         var xPosition = parseFloat(d3.select(this).attr("x")) + 25;
@@ -234,10 +239,18 @@ var initGraph = function() {
       }
     })
     .on('mouseleave', function(d) {
-      var actor = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
-      actor.classed('hover1', false)
+      var actors = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
+      actors.classed('hover1', false)
         .classed('hover2', false);
-        /*.style('fill', 'rgb(0, 0, ' + Math.floor(colorScale(d.Commonalities)) + ')');*/
+
+      if (d3.select(this).classed('wasCommon')) {
+        actors.classed('wasCommon', false);
+        if (!(d3.select(this).classed('active1') || 
+          d3.select(this).classed('active2'))) {
+          actors.classed('common', true);
+        }
+      }
+
       d3.select('#appearanceTooltip').classed('hidden', true);
     })
     .on('click', function(d) {
@@ -283,22 +296,38 @@ var initGraph = function() {
     });
 
   var appearanceClicked = function(d, ele) {
-    var actor = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
+    var actors = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
     if (!d3.select('#actor1').classed('active')) {
       d3.select('#actor1')
         .attr('data-actorid', d.ActorID)
         .classed('active', true);
       d3.select('#actor1 .actorName').text(d.ActorName);
-      actor.classed('active1', true);
+      actors.classed('active1', true);
     } else if (!d3.select('#actor2').classed('active')) {
       d3.select('#actor2')
         .attr('data-actorid', d.ActorID)
         .classed('active', true);
       d3.select('#actor2 .actorName').text(d.ActorName);
-      actor.classed('active2', true);
-    }
-    
+      actors.classed('active2', true);
+    }    
     setCommonalities();
+    /*actors.each(function(d,i) {
+      var x = d3.select(this).attr('x'),
+          y = d3.select(this).attr('y'),
+          w = d3.select(this).attr('width'),
+          h = d3.select(this).attr('height'),
+          cls = d3.select(this).classed('active1') ? 
+            'active1' : 'active2';
+      svg.append('rect')
+        .attr('x', x)
+        .attr('y', y)
+        .attr('height', h)
+        .attr('width', w)
+        .attr('data-actorid', d.ActorID)
+        .classed('appearance', true)
+        .classed('clicked', true)
+        .classed(cls, true);
+    });*/
   };
 
   var setCommonalities = function() {
@@ -308,11 +337,13 @@ var initGraph = function() {
       !d3.select('#actor2').classed('active');
     rects.classed('common', false);
     if (both) {
+      rects.classed('clickable', false);
       showCommonModal();
     } else if (neither) {
       rects.classed('clickable', true);
       changeSearch();
     } else {
+      rects.classed('clickable', false);
       getCommonActors();
     }
   };
