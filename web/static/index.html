@@ -7,6 +7,7 @@
     <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.3/moment.min.js"></script>
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.4/typeahead.bundle.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0/handlebars.min.js"></script>
     <script src="svuviz.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
@@ -19,7 +20,7 @@
         <div class="col-xs-2 col-centered">
           <div id="actor1" class="actor">
             <span class="actorName"></span>
-            <span class="actorClose" title="Clear Actor">&times;</span>
+            <span class="actorClose" title="Clear Actor">&#x2715;</span>
           </div>
         </div>
         <div class="col-xs-2 col-centered">
@@ -31,18 +32,21 @@
       </div>
     </div>
     <div id="main"></div>
+
     <div id="appearanceTooltip" class="hoverTooltip hidden">
       <p><strong>Actor: <span id="name"></span></strong></p>
       <p>Character: <span id="character"></span></p>
       <p>Appearances: <span id="appearances"></span></p>
       <p>Commonalities: <span id="commonalities"></span></p>
     </div>
+
     <div id="episodeTooltip" class="hoverTooltip hidden">
       <p>Title: <span id="title"></span></p>
       <p>Season: <span id="season"></span> Episode: <span id="number"></span></p>
       <p>Synopsis: <span id="synopsis"></span>...</p>
       <p>Original Air Date: <span id="airdate"></span></p>
     </div>
+
     <div class="modal fade" id="commonModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -57,6 +61,7 @@
         </div>
       </div>
     </div>
+
     <div class="modal fade" id="actorModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -71,5 +76,90 @@
         </div>
       </div>
     </div>
+
+    <script id="commonModal-template" type="text/x-handlebars-template">
+      <div class="row commonHeader">
+        <div class="col-xs-4">
+          <h4>
+          {{{actorLink actorId1 actorName1}}}
+          </h4>
+        </div>
+        <div class="col-xs-4">
+          <h4>
+            Title
+          </h4>
+        </div>
+        <div class="col-xs-4">
+          <h4>
+          {{{actorLink actorId2 actorName2}}}
+          </h4>
+        </div>
+      </div>
+      <h4>TV Shows</h4>
+      {{#if processed.svu.length}}
+      {{#each processed.svu}}
+        {{>commonRow this}}
+      {{/each}}
+      {{/if}}
+      {{#if processed.tv.length}}
+      {{#each processed.tv}}
+        {{>commonRow this}}
+      {{/each}}
+      {{/if}}
+      {{#if processed.movies.length}}
+      <h4>Movies</h4>
+      {{#each processed.movies}}
+        {{>commonRow this}}
+      {{/each}}
+      {{/if}}
+    </script>
+
+    <script id="commonRow-partial" type="text/x-handlebars-template">
+      <div class="row alternateRow">
+        <div class="col-xs-4">
+        {{{characterLink CharacterID1 Character1}}}
+        </div>
+        <div class="col-xs-4">
+        {{{titleLink TitleID Title}}}
+        {{episodes this}}
+        </div>
+        <div class="col-xs-4">
+        {{{characterLink CharacterID2 Character2}}}
+        </div>
+      </div>
+    </script>
+
+    <script id="actorModal-template" type="text/x-handlebars-template">
+      <h4>TV Shows</h4>
+      {{#if processed.svu.length}}
+      {{#each processed.svu}}
+        {{>actorRow this}}
+      {{/each}}
+      {{/if}}
+      {{#if processed.tv.length}}
+      {{#each processed.tv}}
+        {{>actorRow this}}
+      {{/each}}
+      {{/if}}
+      {{#if processed.movies.length}}
+      <h4>Movies</h4>
+      {{#each processed.movies}}
+        {{>actorRow this}}
+      {{/each}}
+      {{/if}}
+    </script>
+
+    <script id="actorRow-partial" type="text/x-handlebars-template">
+      <div class="row alternateRow">
+        <div class="col-xs-6">
+        {{{characterLink CharacterID Character}}}
+        </div>
+        <div class="col-xs-6">
+        {{{titleLink TitleID Title}}}
+        {{episodes this}}
+        </div>
+      </div>
+    </script>
+
   </body>
 </html>

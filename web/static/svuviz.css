@@ -95,7 +95,7 @@ rect.common {
 .actorClose:hover {
   font-weight: bold;
 }
-.commonRow:nth-child(odd) {
+.alternateRow:nth-child(odd) {
   background-color: #CCC;
 }
 .typeahead {

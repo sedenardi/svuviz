@@ -18,6 +18,8 @@ $(document).ready(function(){
       e.dispatchEvent(evt);
     });
   };
+
+  registerHelpers();
 });
 
 var prepareDataset = function(obj) {
@@ -349,67 +351,15 @@ var initGraph = function() {
 };
 
 var getActorModalBody = function(param) {
-  var common = '';
-  var tv = '', movies = '';
-  var processed = processModalResults(param.data);
-  for (var i = 0; i < processed.svu.length; i++) {
-    tv += '<div class="row commonRow">' +
-      '<div class="col-xs-6">' + getCharacterLink(processed.svu[i].CharacterID,processed.svu[i].Character) + 
-      '</div><div class="col-xs-6">' + getTitleLink('tt0203259','SVU') + ' (' + processed.svu[i].Episodes + ' episodes)</div></div>';
-  }
-  for (var i = 0; i < processed.tv.length; i++) {
-    tv += '<div class="row commonRow">' +
-      '<div class="col-xs-6">' + getCharacterLink(processed.tv[i].CharacterID,processed.tv[i].Character) + 
-      '</div><div class="col-xs-6">' + getTitleLink(processed.tv[i].TitleID,processed.tv[i].Title) + 
-      ' (' + processed.tv[i].Episodes + ' episodes)</div></div>';
-  }
-  for (var i = 0; i < processed.movies.length; i++) {
-    movies += '<div class="row commonRow">' +
-      '<div class="col-xs-6">' + getCharacterLink(processed.movies[i].CharacterID,processed.movies[i].Character) + 
-      '</div><div class="col-xs-6">' + getTitleLink(processed.movies[i].TitleID,processed.movies[i].Title) + '</div></div>';
-  }
-  if (tv) {
-    common += '<h4>TV Shows</h4>' + tv;
-  }
-  if (movies) {
-    common += '<h4>Movies</h4>' + movies;
-  }
-  return common;
+  param.processed = processModalResults(param.data);
+  var actorModal = Handlebars.compile($('#actorModal-template').html());
+  return actorModal(param);
 };
 
 var getCommonModalBody = function(param) {
-  var common = '<div class="row commonHeader">' +
-    '<div class="col-xs-4"><h4>' + getActorLink(param.actorId1,param.actorName1) + 
-    '</h4></div><div class="col-xs-4"><h4>Title</h4></div>' + 
-    '<div class="col-xs-4"><h4>' + getActorLink(param.actorId2,param.actorName2) + '</h4></div></div>';
-  var tv = '', movies = '';
-  var processed = processModalResults(param.data);
-  for (var i = 0; i < processed.svu.length; i++) {
-    tv += '<div class="row commonRow">' +
-      '<div class="col-xs-4">' + getCharacterLink(processed.svu[i].CharacterID1,processed.svu[i].Character1) + 
-      '</div><div class="col-xs-4">' + getTitleLink('tt0203259','SVU') + ' (' + processed.svu[i].Episodes + ' episodes)</div>' + 
-      '<div class="col-xs-4">' + getCharacterLink(processed.svu[i].CharacterID2,processed.svu[i].Character2) + '</div></div>';
-  }
-  for (var i = 0; i < processed.tv.length; i++) {
-    tv += '<div class="row commonRow">' +
-      '<div class="col-xs-4">' + getCharacterLink(processed.tv[i].CharacterID1,processed.tv[i].Character1) + 
-      '</div><div class="col-xs-4">' + getTitleLink(processed.tv[i].TitleID,processed.tv[i].Title) + 
-      ' (' + processed.tv[i].Episodes + ' episodes)</div>' + 
-      '<div class="col-xs-4">' + getCharacterLink(processed.tv[i].CharacterID2,processed.tv[i].Character2) + '</div></div>';
-  }
-  for (var i = 0; i < processed.movies.length; i++) {
-    movies += '<div class="row commonRow">' +
-      '<div class="col-xs-4">' + getCharacterLink(processed.movies[i].CharacterID1,processed.movies[i].Character1) + 
-      '</div><div class="col-xs-4">' + getTitleLink(processed.movies[i].TitleID,processed.movies[i].Title) + '</div>' + 
-      '<div class="col-xs-4">' + getCharacterLink(processed.movies[i].CharacterID2,processed.movies[i].Character2) + '</div></div>';
-  }
-  if (tv) {
-    common += '<h4>TV Shows</h4>' + tv;
-  }
-  if (movies) {
-    common += '<h4>Movies</h4>' + movies;
-  }
-  return common;
+  param.processed = processModalResults(param.data);
+  var commonModal = Handlebars.compile($('#commonModal-template').html());
+  return commonModal(param);
 };
 
 var processModalResults = function(data) {
@@ -428,6 +378,46 @@ var processModalResults = function(data) {
     movies: movies,
     tv: tv
   };
+};
+
+var registerHelpers = function() {
+  Handlebars.registerHelper('json', function(obj) {
+    return JSON.stringify(obj, null, 2);
+  });
+  Handlebars.registerHelper('actorLink', function(id, name) {
+    if (typeof id === 'string') {
+      return '<a class="actorLink" href="http://www.imdb.com/name/' + 
+        id + '/" target="_blank">' + name + '</a>';
+    } else {
+      return name;
+    }
+  });
+  Handlebars.registerHelper('characterLink', function(id, name) {
+    if (typeof id === 'string') {
+      return '<a class="characterLink" href="http://www.imdb.com/character/' + 
+        id + '/" target="_blank">' + name + '</a>';
+    } else {
+      return name;
+    }
+  });
+  Handlebars.registerHelper('titleLink', function(id, name) {
+    if (typeof id === 'string') {
+      return '<a class="titleLink" href="http://www.imdb.com/title/' + 
+        id + '/" target="_blank">' + name + '</a>';
+    } else {
+      return name;
+    }
+  });
+  Handlebars.registerHelper('episodes', function(row) {
+    if (row.TV) {
+      return ' (' + row.Episodes + ' episode' + (row.Episodes > 1 ? 's' : '') + ')';
+    } else {
+      return '';
+    }
+  });
+
+  Handlebars.registerPartial('commonRow', $('#commonRow-partial').html());
+  Handlebars.registerPartial('actorRow', $('#actorRow-partial').html());
 };
 
 var getActorLink = function(id, name) {
