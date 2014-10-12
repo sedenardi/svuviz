@@ -1,5 +1,5 @@
 body {
-  margin: 8px;
+  padding: 55px 8px 8px;
 }
 rect.appearance {
   stroke: rgb(235, 179, 148);
@@ -66,38 +66,24 @@ rect.common {
   /* inline-block space fix */
   margin-right:-4px;
 }
-#searchInput {
-  display: block;
-  width: 240px;
-}
-.actor {
-  width:100%;
-  height:100%;
-  border:1px solid #cecece;
-  padding: 2px 4px;
-  display: none;
-  cursor: pointer;
-}
-.actor:hover {
-  background-color: #f1f1f1;
-  border:1px solid #000000;
-}
-.actor.active {
-  display: inline-block;
-}
-.actorName {
-  font-size: 12pt;
-  font-family: sans-serif;
-}
 .actorClose {
-  float:right;
+  display: inline;
+  cursor: pointer;
+  color: #777;
 }
 .actorClose:hover {
+  color: #000;
   font-weight: bold;
 }
-.alternateRow:nth-child(odd) {
-  background-color: #CCC;
+.search {
+  display: inline-block;
+  width: 90%;  
 }
+.form-control {
+  padding: 8px 6px;
+  height: 28px;
+}
+
 .typeahead {
   background-color: #fff;
 }
@@ -113,7 +99,11 @@ rect.common {
 }
 
 .tt-hint {
-  color: #999
+  width: 100% !important;
+  color: #999;
+  width: 90%;
+  padding: 8px 6px;
+  height: 28px;
 }
 
 .tt-dropdown-menu {
@@ -161,4 +151,7 @@ rect.common {
 }
 .searchCharacterName{
   font-size: 12px;
+}
+.alternateRow:nth-child(odd) {
+  background-color: #CCC;
 }

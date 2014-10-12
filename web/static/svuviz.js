@@ -66,38 +66,60 @@ var prepareDataset = function(obj) {
 
 var setupSearch = function() {
   var actorSearch = function(actorId) {
-    if ($('.actor.active').length < 2) {
-      $('.appearance[data-actorid="' + actorId + '"]:first').d3Click();
-    }
+    $('.appearance[data-actorid="' + actorId + '"]:first').d3Click();
   };
 
-  search = new Bloodhound({
+  searchActor = new Bloodhound({
     datumTokenizer: Bloodhound.tokenizers.obj.whitespace('ActorName', 'Characters'),
     queryTokenizer: Bloodhound.tokenizers.whitespace,
     limit: 10,
     local: dataset.searchArray
   });
    
-  search.initialize();
+  searchActor.initialize();
 
-  $('#searchInput').typeahead({
-    highlight: true
-  }, 
-  {
-    name: 'search',
-    source: search.ttAdapter(),
-    templates: {
-      suggestion: function(d) {
-        return '<div class="searchActorName">' + 
-          d.ActorName + '</div>' + 
-          '<div class="searchCharacterName">' + 
-          d.Characters + '</div>';
+  var typeaheadOptions = {
+    opt1: {
+      highlight: true
+    },
+    opt2: {
+      name: 'search',
+      source: searchActor.ttAdapter(),
+      displayKey: 'ActorName',
+      templates: {
+        suggestion: function(d) {
+          return '<div class="searchActorName">' + 
+            d.ActorName + '</div>' + 
+            '<div class="searchCharacterName">' + 
+            d.Characters + '</div>';
+        }
       }
     }
-  }).bind('typeahead:selected', function (obj, datum){
-    actorSearch(datum.ActorID);
-    $('#searchInput').blur();
+  };
+
+  $('#searchInput1').typeahead(typeaheadOptions.opt1, typeaheadOptions.opt2)
+    .bind('typeahead:selected', function (obj, datum){
+      actorSearch(datum.ActorID);
   });
+
+  $('#searchInput2').typeahead(typeaheadOptions.opt1, typeaheadOptions.opt2)
+    .bind('typeahead:selected', function (obj, datum){
+      actorSearch(datum.ActorID);
+  });
+};
+
+var setActorSearch = function(selector, actorId, actorName) {
+  $(selector).parents('.actor').addClass('active', true);
+  $(selector).parents('.actor').attr('data-actorid', actorId);
+  $(selector).parents('.actor').attr('data-actorname', actorName);
+  $(selector).typeahead('val', actorName);
+};
+
+var clearActorSearch = function(selector) {
+  $(selector).parents('.actor').removeClass('active', true);
+  $(selector).parents('.actor').attr('data-actorid', '');
+  $(selector).parents('.actor').attr('data-actorname', '');
+  $(selector).typeahead('val', '');
 };
 
 var changeSearch = function(actors) {
@@ -112,9 +134,9 @@ var changeSearch = function(actors) {
   } else {
     searchData = dataset.searchArray;
   }
-  search.clear();
-  search.local = searchData;
-  search.initialize(true);
+  searchActor.clear();
+  searchActor.local = searchData;
+  searchActor.initialize(true);
 }
 
 var initGraph = function() {
@@ -255,16 +277,13 @@ var initGraph = function() {
     })
     .on('click', function(d) {
       if (d3.select(this).classed('clickable')) {
-        appearanceClicked(d, this);
+        appearanceClicked(d);
       }
     });
 
   d3.selectAll('.actorClose')
     .on('click', function(d) {
       var parent = d3.select(this)[0][0].parentNode;
-      d3.select(parent).classed('active', false);
-      /*parent.className = parent.className.replace(' active', '')
-        .replace('active ', '').replace('active', '');*/
       if (parent.id === 'actor1') {
         rects.classed('active1', false);
       } else if (parent.id === 'actor2') {
@@ -275,10 +294,13 @@ var initGraph = function() {
       d3.selectAll('.clicked[data-actorid="' + actorId + '"]')
         .remove();
 
+      var target = d3.select(this).attr('data-target');
+      clearActorSearch(target);
+
       setCommonalities();
     });
 
-  d3.selectAll('.actor')
+  /*d3.selectAll('.actor')
     .on('click', function(d) {
       var actorId = d3.select(this).attr('data-actorid');
       if (!d3.select('.actor.active[data-actorid="' + actorId + '"] .actorName')[0][0]) {
@@ -299,22 +321,18 @@ var initGraph = function() {
       });
       d3.select('#modalActor').html(getActorLink(actorId, actorName));
       $('#actorModal').modal('show');
-    });
+    });*/
 
   var scaleFactor = 3;
-  var appearanceClicked = function(d, ele) {
+  var appearanceClicked = function(d) {
     var actors = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
     if (!d3.select('#actor1').classed('active')) {
-      d3.select('#actor1')
-        .attr('data-actorid', d.ActorID)
-        .classed('active', true);
-      d3.select('#actor1 .actorName').text(d.ActorName);
+      var target = d3.select('#actor1').attr('data-target');
+      setActorSearch(target, d.ActorID, d.ActorName);
       actors.classed('active1', true);
     } else if (!d3.select('#actor2').classed('active')) {
-      d3.select('#actor2')
-        .attr('data-actorid', d.ActorID)
-        .classed('active', true);
-      d3.select('#actor2 .actorName').text(d.ActorName);
+      var target = d3.select('#actor2').attr('data-target');
+      setActorSearch(target, d.ActorID, d.ActorName);
       actors.classed('active2', true);
     }
     setCommonalities();
@@ -384,9 +402,9 @@ var getCommonActors = function() {
 
 var showCommonModal = function() {
   var actorId1 = d3.select('#actor1').attr('data-actorid');
-  var actorName1 = d3.select('#actor1 .actorName').text();
+  var actorName1 = d3.select('#actor1').attr('data-actorname');
   var actorId2 = d3.select('#actor2').attr('data-actorid');
-  var actorName2 = d3.select('#actor2 .actorName').text();
+  var actorName2 = d3.select('#actor2').attr('data-actorname');
   $.ajax({
     url: '/getCommonTitles.json',
     type: 'GET',
