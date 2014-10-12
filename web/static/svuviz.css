@@ -1,5 +1,5 @@
 body {
-  padding: 55px 8px 8px;
+  padding: 50px 8px 8px;
 }
 rect.appearance {
   stroke: rgb(235, 179, 148);
@@ -15,11 +15,17 @@ rect.hover1 {
 rect.active1 {
   fill: rgb(255, 0, 0) !important;
 }
+#actor1.active .form-control {
+  border-color: rgb(255, 0, 0);
+}
 rect.hover2 {
   fill: rgb(0, 255, 0) !important;
 }
 rect.active2 {
   fill: rgb(0, 255, 0) !important;
+}
+#actor2.active .form-control {
+  border-color: rgb(0, 255, 0);
 }
 rect.common {
   fill: rgb(235, 179, 148) !important;
@@ -51,7 +57,7 @@ rect.common {
   width: 100%;
   display: table;
   clear: both;
-  margin: 4px 0;
+  margin: 8px 0;
 }
 .row-centered {
   display: block;
@@ -66,38 +72,40 @@ rect.common {
   /* inline-block space fix */
   margin-right:-4px;
 }
-.actorClose {
+.actor .form-control {
+  padding: 5px 6px;
+  height: 28px;
+}
+
+.actorControl {
   display: inline;
   cursor: pointer;
   color: #777;
 }
-.actorClose:hover {
+.actorControl.left {
+    margin-right: -5px;
+  }
+.actorControl.right {
+    margin-left: -5px;
+  }
+.actorControl:hover {
   color: #000;
-  font-weight: bold;
+  background-color: #eee;
+}
+.actorControl:active {
+  background-color: #ddd;
 }
 .search {
   display: inline-block;
-  width: 90%;  
+  width: 73%;
 }
 .form-control {
-  padding: 8px 6px;
-  height: 28px;
+  border-radius: 0px;
 }
 
-.typeahead {
-  background-color: #fff;
+.twitter-typeahead {
+  width: 100%;
 }
-
-.typeahead:focus {
-  border: 2px solid #0097cf;
-}
-
-.tt-query {
-  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-     -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-          box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-}
-
 .tt-hint {
   width: 100% !important;
   color: #999;

@@ -140,9 +140,9 @@ var changeSearch = function(actors) {
 }
 
 var initGraph = function() {
-  margin = 20;
+  margin = 8;
   width = $(window).width() - 2*margin;
-  height = $(window).height() - 2*margin - 4 - $('#main').offset().top;
+  height = $(window).height() - 2*margin - $('#main').offset().top;
   episodeHeight = Math.floor(height / 8);
 
   xScale = d3.scale.ordinal()
@@ -300,28 +300,31 @@ var initGraph = function() {
       setCommonalities();
     });
 
-  /*d3.selectAll('.actor')
+  d3.selectAll('.actorInfo')
     .on('click', function(d) {
-      var actorId = d3.select(this).attr('data-actorid');
-      if (!d3.select('.actor.active[data-actorid="' + actorId + '"] .actorName')[0][0]) {
-        return;
-      }
-      var actorName = d3.select('.actor.active[data-actorid="' + actorId + '"] .actorName').text();
-      $.ajax({
-        url: '/getActorInfo.json',
-        type: 'GET',
-        dataType: 'json',
-        data: { ActorID: actorId },
-        success: function(response) {
-          var modalBody = getActorModalBody({
-            data: response
-          });
-          d3.select('#actorModalBody').html(modalBody);
+      var parent = d3.select(this)[0][0].parentNode;
+      if (d3.select(parent).classed('active')) {
+        var actorId = d3.select(parent).attr('data-actorid');
+        var actorName = d3.select(parent).attr('data-actorname');
+        if (!actorName.length) {
+          return;
         }
-      });
-      d3.select('#modalActor').html(getActorLink(actorId, actorName));
-      $('#actorModal').modal('show');
-    });*/
+        $.ajax({
+          url: '/getActorInfo.json',
+          type: 'GET',
+          dataType: 'json',
+          data: { ActorID: actorId },
+          success: function(response) {
+            var modalBody = getActorModalBody({
+              data: response
+            });
+            d3.select('#actorModalBody').html(modalBody);
+          }
+        });
+        d3.select('#modalActor').html(getActorLink(actorId, actorName));
+        $('#actorModal').modal('show');
+      }
+    });
 
   var scaleFactor = 3;
   var appearanceClicked = function(d) {
