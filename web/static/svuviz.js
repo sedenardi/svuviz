@@ -190,7 +190,7 @@ var initGraph = function() {
       d3.select(this).style('fill', 'rgb(255, 0, 0)');
 
       var xPosition = parseFloat(d3.select(this).attr("x")) + 25;
-      if (xPosition > (width - (200 - 20))) xPosition -= (200 + 50);
+      if (xPosition > (width - 200)) xPosition -= (200 + 50);
       var yPosition = height - episodeHeight - 200;
       //Update the tooltip position and value
       var tooltip = d3.select("#episodeTooltip")
@@ -244,8 +244,8 @@ var initGraph = function() {
             .classed('common', false);
         }
 
-        var xPosition = parseFloat(d3.select(this).attr("x")) + 25;
-        if (xPosition > (width - (200 - 25))) xPosition -= (200 + 50);
+        var xPosition = parseFloat(d3.select(this).attr("x")) + 30;
+        if (xPosition > (width - 200)) xPosition -= (200 + 50);
         var yPosition = height - 100;
         //Update the tooltip position and value
         var tooltip = d3.select('#appearanceTooltip')
