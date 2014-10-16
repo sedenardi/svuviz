@@ -29,6 +29,13 @@ var Web = function(config) {
     });
   });
 
+  app.get('/commonTitles.json', function (req, res) {
+    var commonTitles = queries.commonTitles();
+    db.query(commonTitles, function(dbRes) {
+      res.json(dbRes);
+    });
+  });
+
   app.get('/actorsAndTitles.json', function (req, res) {
     var actorsAndTitles = queries.actorsAndTitles();
     db.query(actorsAndTitles.cmd, function(dbRes) {

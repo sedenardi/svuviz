@@ -84,6 +84,50 @@ order by t.AirDate, c.Commonalities desc;';
     };
   };
 
+  this.commonTitles = function() {
+    var sql = '\
+select \
+  coalesce(pt.TitleID,t.TitleID) as TitleID \
+, coalesce(pt.Title,t.Title) as Title \
+, case when pt.TitleID is null then false else true end as TV \
+from Titles t \
+  left outer join Titles pt \
+    on pt.TitleID = t.ParentTitleID \
+where exists \
+  (Select 1 from Appearances ap1 \
+    where exists \
+    (select 1 from Actors ac1 \
+        where ac1.ActorID = ap1.ActorID \
+        and exists \
+      (select 1 from Appearances acp1 \
+      where acp1.ActorID = ac1.ActorID \
+            and exists \
+        (Select 1 from Titles t1 \
+                where t1.TitleID = acp1.TitleID \
+                and t1.ParentTitleID = \'tt0203259\'))) \
+  and ap1.TitleID = t.TitleID \
+    and exists \
+    (Select 1 from Appearances ap2 \
+    where exists \
+      (select 1 from Actors ac2 \
+      where ac2.ActorID = ap2.ActorID \
+      and exists \
+        (select 1 from Appearances acp2 \
+        where acp2.ActorID = ac2.ActorID \
+        and exists \
+          (Select 1 from Titles t2 \
+          where t2.TitleID = acp2.TitleID \
+          and t2.ParentTitleID = \'tt0203259\'))) \
+        and ap2.TitleID = ap1.TitleID \
+        and ap2.ActorID <> ap1.ActorID)) \
+group by TitleID,Title \
+order by Title;';
+    return {
+      sql: sql,
+      inserts: []
+    };
+  };
+
   this.actorsAndTitles = function() {
     var sql = '\
 select distinct \
