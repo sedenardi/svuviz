@@ -29,9 +29,9 @@ var Web = function(config) {
     });
   });
 
-  app.get('/commonTitles.json', function (req, res) {
-    var commonTitles = queries.commonTitles();
-    db.query(commonTitles, function(dbRes) {
+  app.get('/filterTitles.json', function (req, res) {
+    var filterTitles = queries.filterTitles();
+    db.query(filterTitles, function(dbRes) {
       res.json(dbRes);
     });
   });

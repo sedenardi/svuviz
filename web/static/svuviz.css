@@ -106,7 +106,7 @@ rect.common {
 .twitter-typeahead {
   width: 100%;
 }
-.tt-hint {
+.search .tt-hint {
   width: 100% !important;
   color: #999;
   width: 90%;

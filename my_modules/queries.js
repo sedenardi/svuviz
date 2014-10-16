@@ -84,7 +84,7 @@ order by t.AirDate, c.Commonalities desc;';
     };
   };
 
-  this.commonTitles = function() {
+  this.filterTitles = function() {
     var sql = '\
 select \
   coalesce(pt.TitleID,t.TitleID) as TitleID \

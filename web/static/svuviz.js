@@ -3,9 +3,16 @@ $(document).ready(function(){
     url: 'showInfo.json',
     cache: true,
     success: function(data) {
-      prepareDataset(data);
-      initGraph();
-      setupSearch();
+      $.ajax({
+        url: 'filterTitles.json',
+        cache: true,
+        success: function(tData) {
+          prepareDataset(data, tData);
+          initGraph();
+          setupTitleSearch();
+          setupActorSearch();
+        }
+      });
     }
   });
 
@@ -22,7 +29,7 @@ $(document).ready(function(){
   registerHelpers();
 });
 
-var prepareDataset = function(obj) {
+var prepareDataset = function(obj, tData) {
   var searchObj = {};
   for (var i = 0; i < obj.length; i++) {
     for (var j = 0; j < obj[i].Appearances.length; j++) {
@@ -58,33 +65,60 @@ var prepareDataset = function(obj) {
     searchObj[actorId].Characters = charStr;
   }
   dataset = {
-    titles: obj,
+    showTitles: obj,
+    searchTitles: tData,
     searchObj: searchObj,
     searchArray: searchArray
   };
 };
 
-var setupSearch = function() {
+var setupTitleSearch = function() {
+  searchTitleSource = new Bloodhound({
+    datumTokenizer: Bloodhound.tokenizers.obj.whitespace('Title'),
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    limit: 10,
+    local: dataset.searchTitles
+  });
+  searchTitleSource.initialize();
+  
+  $('#titleSearch').typeahead({
+    highlight: true
+  }, {
+    name: 'titleSearch',
+    source: searchTitleSource.ttAdapter(),
+    displayKey: 'Title',
+    templates: {
+      suggestion: function(d) {
+        return '<div class="searchActorName">' + 
+          d.Title + '</div>' + 
+          '<div class="searchCharacterName">' + 
+          (d.TV ? 'TV Show' : '') + '</div>';
+      }
+    }
+  }).bind('typeahead:selected', function (obj, datum){
+    console.log(datum);
+  })
+};
+
+var setupActorSearch = function() {
   var actorSearch = function(actorId) {
     $('.appearance[data-actorid="' + actorId + '"]:first').d3Click();
   };
 
-  searchActor = new Bloodhound({
+  searchActorSource = new Bloodhound({
     datumTokenizer: Bloodhound.tokenizers.obj.whitespace('ActorName', 'Characters'),
     queryTokenizer: Bloodhound.tokenizers.whitespace,
     limit: 10,
     local: dataset.searchArray
-  });
-   
-  searchActor.initialize();
-
+  });   
+  searchActorSource.initialize();
   var typeaheadOptions = {
     opt1: {
       highlight: true
     },
     opt2: {
       name: 'search',
-      source: searchActor.ttAdapter(),
+      source: searchActorSource.ttAdapter(),
       displayKey: 'ActorName',
       templates: {
         suggestion: function(d) {
@@ -134,9 +168,9 @@ var changeSearch = function(actors) {
   } else {
     searchData = dataset.searchArray;
   }
-  searchActor.clear();
-  searchActor.local = searchData;
-  searchActor.initialize(true);
+  searchActorSource.clear();
+  searchActorSource.local = searchData;
+  searchActorSource.initialize(true);
 }
 
 var initGraph = function() {
@@ -146,22 +180,22 @@ var initGraph = function() {
   episodeHeight = Math.floor(height / 8);
 
   xScale = d3.scale.ordinal()
-    .domain(d3.range(dataset.titles.length))
+    .domain(d3.range(dataset.showTitles.length))
     .rangeBands([0, width], 0.1);
 
   yScale = d3.scale.linear()
-    .domain([0, d3.max(dataset.titles, function(d) {
+    .domain([0, d3.max(dataset.showTitles, function(d) {
       return d.Appearances.length;
     })])
     .range([episodeHeight, height]);
 
   yHeight = (height - episodeHeight) / 
-    d3.max(dataset.titles, function(d) {
+    d3.max(dataset.showTitles, function(d) {
       return d.Appearances.length;
     });
 
   var colorScale = d3.scale.log()
-    .domain([1, d3.max(dataset.titles, function(d) {
+    .domain([1, d3.max(dataset.showTitles, function(d) {
       return d.Appearances[0].Commonalities;
     })])
     .range([1, 255]);
@@ -175,7 +209,7 @@ var initGraph = function() {
 
   var epGroups = svg.append('g')
     .selectAll('g')
-    .data(dataset.titles)
+    .data(dataset.showTitles)
     .enter()
     .append('g');
 
@@ -211,7 +245,7 @@ var initGraph = function() {
 
   var appGroups = svg.append('g')
     .selectAll('g')
-    .data(dataset.titles)
+    .data(dataset.showTitles)
     .enter()
     .append('g');
 
