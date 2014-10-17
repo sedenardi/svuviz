@@ -80,7 +80,7 @@ var Web = function(config) {
     if (typeof req.query.ActorID === 'undefined') {
       res.json(402, { error: 'Must specify ActorID.'});
     }
-    var query = queries.getCommonActors(req.query.ActorID);
+    var query = queries.getCommonActors(req.query.ActorID, req.query.TitleID);
     db.query(query, function(dbRes) {
       var array = [];
       for (var i = 0; i < dbRes.length; i++) {
@@ -110,6 +110,20 @@ var Web = function(config) {
     var query = queries.getActorInfo(req.query.ActorID);
     db.query(query, function(dbRes) {
       res.json(dbRes);
+    });
+  });
+
+  app.get('/getTitleActors.json', function (req, res) {
+    if (typeof req.query.TitleID === 'undefined') {
+      res.json(402, { error: 'Must specify TitleID.'});
+    }
+    var query = queries.getTitleActors(req.query.TitleID);
+    db.query(query, function(dbRes) {
+      var array = [];
+      for (var i = 0; i < dbRes.length; i++) {
+        array.push(dbRes[i].ActorID);
+      }
+      res.json(array);
     });
   });
 

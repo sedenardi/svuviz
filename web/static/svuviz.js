@@ -72,6 +72,7 @@ var prepareDataset = function(obj, tData) {
   };
 };
 
+var searchTitleActors = [], searchTitle = '';
 var setupTitleSearch = function() {
   searchTitleSource = new Bloodhound({
     datumTokenizer: Bloodhound.tokenizers.obj.whitespace('Title'),
@@ -97,6 +98,28 @@ var setupTitleSearch = function() {
     }
   }).bind('typeahead:selected', function (obj, datum){
     console.log(datum);
+    searchTitle = datum.TitleID;
+    $.ajax({
+      url: 'getTitleActors.json',
+      data: { TitleID: datum.TitleID },
+      cache: true,
+      success: function(response) {
+        searchTitleActors = response;
+        var mapped = d3.set(searchTitleActors);
+        d3.selectAll('.clicked').remove();
+        d3.selectAll('.appearance')
+          .style('display', function(d) {
+            if (mapped.has(d.ActorID)) {
+              return 'inline';
+            } else {
+              return 'none';
+            }
+          });
+        clearActorSearch('#searchInput1');
+        clearActorSearch('#searchInput2');
+        changeSearch(searchTitleActors);
+      }
+    });
   })
 };
 
@@ -165,7 +188,10 @@ var changeSearch = function(actors) {
       }
       searchData.push(dataset.searchObj[actors[i]]);
     }
-  } else {
+  } else if (searchTitleActors.length) {
+    searchData = searchTitleActors;
+  }
+  else {
     searchData = dataset.searchArray;
   }
   searchActorSource.clear();
@@ -429,11 +455,13 @@ var initGraph = function() {
     var actorId = d3.select('#actor1').classed('active') ? 
       d3.select('#actor1').attr('data-actorid') :
       d3.select('#actor2').attr('data-actorid');
+    var data = { ActorID: actorId };
+    if (searchTitle.length) data.TitleID = searchTitle;
     $.ajax({
       url: '/getCommonActors.json',
       type: 'GET',
       dataType: 'json',
-      data: { ActorID: actorId },
+      data: data,
       success: function(response) {
         var mapped = d3.set(response);
         rects.style('display', function(d) {
@@ -443,11 +471,6 @@ var initGraph = function() {
             return 'none';
           }
         });
-        // for (var i = 0; i < response.length; i++) {
-        //   d3.selectAll('rect[data-actorid="' + response[i] + '"]')
-        //     .classed('common', true)
-        //     .classed('clickable', true);
-        // }
         changeSearch(response);
       }
     });

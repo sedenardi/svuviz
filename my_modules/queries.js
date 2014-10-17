@@ -96,28 +96,22 @@ from Titles t \
 where exists \
   (Select 1 from Appearances ap1 \
     where exists \
-    (select 1 from Actors ac1 \
-        where ac1.ActorID = ap1.ActorID \
-        and exists \
-      (select 1 from Appearances acp1 \
-      where acp1.ActorID = ac1.ActorID \
-            and exists \
-        (Select 1 from Titles t1 \
-                where t1.TitleID = acp1.TitleID \
-                and t1.ParentTitleID = \'tt0203259\'))) \
+    (select 1 from Appearances acp1 \
+    where acp1.ActorID = ap1.ActorID \
+    and exists \
+      (Select 1 from Titles t1 \
+      where t1.TitleID = acp1.TitleID \
+      and t1.ParentTitleID = \'tt0203259\')) \
   and ap1.TitleID = t.TitleID \
     and exists \
     (Select 1 from Appearances ap2 \
     where exists \
-      (select 1 from Actors ac2 \
-      where ac2.ActorID = ap2.ActorID \
+      (select 1 from Appearances acp2 \
+      where acp2.ActorID = ap2.ActorID \
       and exists \
-        (select 1 from Appearances acp2 \
-        where acp2.ActorID = ac2.ActorID \
-        and exists \
-          (Select 1 from Titles t2 \
-          where t2.TitleID = acp2.TitleID \
-          and t2.ParentTitleID = \'tt0203259\'))) \
+        (Select 1 from Titles t2 \
+        where t2.TitleID = acp2.TitleID \
+        and t2.ParentTitleID = \'tt0203259\')) \
         and ap2.TitleID = ap1.TitleID \
         and ap2.ActorID <> ap1.ActorID)) \
 group by TitleID,Title \
@@ -237,7 +231,7 @@ from svumap.Appearances app1 \
     };
   };
 
-  this.getCommonActors = function(ActorID) {
+  this.getCommonActors = function(ActorID,TitleID) {
     var sql = '\
 select distinct a2.ActorID \
 from Appearances a1 \
@@ -254,10 +248,23 @@ and exists \
     inner join Titles t \
       on t.TitleID = app.TitleID \
   where a2.ActorID = app.ActorID \
-    and t.ParentTitleID = \'tt0203259\');';
+    and t.ParentTitleID = \'tt0203259\') ';
+    var inserts = [ActorID];
+    if (typeof TitleID !== 'undefined') {
+      sql += '\
+and exists \
+  (select 1 from Appearances app \
+    where app.ActorID = a2.ActorID \
+    and exists \
+    (Select 1 from Titles t \
+        where t.TitleID = app.TitleID \
+        and coalesce(t.ParentTitleID,t.TitleID) = ?))';
+      inserts.push(TitleID);
+    }
+    sql += ';';
     return {
       sql: sql,
-      inserts: [ActorID]
+      inserts: inserts
     };
   };
 
@@ -313,6 +320,41 @@ order by Commonalities desc;';
     return {
       sql: sql,
       inserts: [ActorID]
+    };
+  };
+
+  this.getTitleActors = function(TitleID) {
+    var sql = '\
+select ActorID \
+from Appearances a \
+where exists \
+  (select 1 from Titles pt \
+  where pt.TitleID = a.TitleID \
+  and coalesce(pt.ParentTitleID,pt.TitleID) = ?) \
+and exists \
+  (select 1 from Appearances svu \
+  where svu.ActorID = a.ActorID \
+  and exists \
+    (Select 1 from Titles t \
+    where t.TitleID = svu.TitleID \
+    and t.ParentTitleID = \'tt0203259\')) \
+and exists \
+  (select 1 from Appearances ap1 \
+  where ap1.ActorID = a.ActorID \
+    and exists \
+    (select 1 from Appearances ap2 \
+        where ap2.TitleID = ap1.TitleID \
+        and ap2.ActorID <> ap1.ActorID \
+        and exists \
+      (select 1 from Appearances svu \
+            where svu.ActorID = ap2.ActorID \
+      and exists \
+        (Select 1 from Titles t \
+        where t.TitleID = svu.TitleID \
+        and t.ParentTitleID = \'tt0203259\'))));';
+    return {
+      sql: sql,
+      inserts: [TitleID]
     };
   };
 
