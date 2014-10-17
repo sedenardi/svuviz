@@ -403,38 +403,55 @@ var initGraph = function() {
       d3.select('#actor2').classed('active');
     var neither = !d3.select('#actor1').classed('active') &&
       !d3.select('#actor2').classed('active');
-    rects.classed('common', false);
+    //rects.classed('common', false);
     if (both) {
-      rects.classed('clickable', false);
+      //rects.classed('clickable', false);
+      rects.style('display',function(d){
+        if (d.ActorID === d3.select('#actor1').attr('data-actorid') ||
+          d.ActorID === d3.select('#actor2').attr('data-actorid')) {
+          return 'inline';
+        } else {
+          return 'none';
+        }
+      });
       showCommonModal();
     } else if (neither) {
-      rects.classed('clickable', true);
+      //rects.classed('clickable', true);
+      rects.style('display','inline');
       changeSearch();
     } else {
-      rects.classed('clickable', false);
+      //rects.classed('clickable', false);
       getCommonActors();
     }
   };
-};
 
-var getCommonActors = function() {
-  var actorId = d3.select('#actor1').classed('active') ? 
-    d3.select('#actor1').attr('data-actorid') :
-    d3.select('#actor2').attr('data-actorid');
-  $.ajax({
-    url: '/getCommonActors.json',
-    type: 'GET',
-    dataType: 'json',
-    data: { ActorID: actorId },
-    success: function(response) {
-      for (var i = 0; i < response.length; i++) {
-        d3.selectAll('rect[data-actorid="' + response[i] + '"]')
-          .classed('common', true)
-          .classed('clickable', true);
+  var getCommonActors = function() {
+    var actorId = d3.select('#actor1').classed('active') ? 
+      d3.select('#actor1').attr('data-actorid') :
+      d3.select('#actor2').attr('data-actorid');
+    $.ajax({
+      url: '/getCommonActors.json',
+      type: 'GET',
+      dataType: 'json',
+      data: { ActorID: actorId },
+      success: function(response) {
+        var mapped = d3.set(response);
+        rects.style('display', function(d) {
+          if (mapped.has(d.ActorID) || d.ActorID === actorId) {
+            return 'inline';
+          } else {
+            return 'none';
+          }
+        });
+        // for (var i = 0; i < response.length; i++) {
+        //   d3.selectAll('rect[data-actorid="' + response[i] + '"]')
+        //     .classed('common', true)
+        //     .classed('clickable', true);
+        // }
+        changeSearch(response);
       }
-      changeSearch(response);
-    }
-  });
+    });
+  };
 };
 
 var showCommonModal = function() {
