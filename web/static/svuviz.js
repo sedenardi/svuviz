@@ -72,7 +72,7 @@ var prepareDataset = function(obj, tData) {
   };
 };
 
-var searchTitleActors = [], searchTitle = '';
+var searchTitleActors = [];
 var setupTitleSearch = function() {
   searchTitleSource = new Bloodhound({
     datumTokenizer: Bloodhound.tokenizers.obj.whitespace('Title'),
@@ -97,8 +97,8 @@ var setupTitleSearch = function() {
       }
     }
   }).bind('typeahead:selected', function (obj, datum){
-    console.log(datum);
-    searchTitle = datum.TitleID;
+    $('#titleSearch').attr('data-titleid', datum.TitleID);
+    $('#titleSearch').attr('data-title', datum.Title);
     $.ajax({
       url: 'getTitleActors.json',
       data: { TitleID: datum.TitleID },
@@ -120,7 +120,17 @@ var setupTitleSearch = function() {
         changeSearch(searchTitleActors);
       }
     });
-  })
+  }).change(function() {
+    var newVal = $(this).val();
+    if (newVal !== $('#titleSearch').attr('data-title')) {
+      $('#titleSearch').attr('data-titleid','');
+      $('#titleSearch').attr('data-title','');
+      $('#titleSearch').typeahead('val', '');
+      searchTitleActors = [];
+      d3.selectAll('.appearance')
+          .style('display','inline');
+    }
+  });
 };
 
 var setupActorSearch = function() {
@@ -456,7 +466,9 @@ var initGraph = function() {
       d3.select('#actor1').attr('data-actorid') :
       d3.select('#actor2').attr('data-actorid');
     var data = { ActorID: actorId };
-    if (searchTitle.length) data.TitleID = searchTitle;
+    if ($('#titleSearch').attr('data-titleid').length) { 
+      data.TitleID = $('#titleSearch').attr('data-titleid');
+    }
     $.ajax({
       url: '/getCommonActors.json',
       type: 'GET',
