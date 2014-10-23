@@ -325,7 +325,7 @@ order by Commonalities desc;';
 
   this.getTitleActors = function(TitleID) {
     var sql = '\
-select ActorID \
+select distinct ActorID \
 from Appearances a \
 where exists \
   (select 1 from Titles pt \

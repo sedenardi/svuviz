@@ -21,7 +21,6 @@ $(document).ready(function(){
     this.each(function (i, e) {
       var evt = document.createEvent("MouseEvents");
       evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-
       e.dispatchEvent(evt);
     });
   };
@@ -115,9 +114,7 @@ var setupTitleSearch = function() {
               return 'none';
             }
           });
-        clearActorSearch('#searchInput1');
-        clearActorSearch('#searchInput2');
-        changeSearch(searchTitleActors);
+        clearBothActors();
       }
     });
   }).change(function() {
@@ -128,16 +125,38 @@ var setupTitleSearch = function() {
       $('#titleSearch').typeahead('val', '');
       searchTitleActors = [];
       d3.selectAll('.appearance')
-          .style('display','inline');
+        .style('display','inline');
+      clearBothActors();
     }
   });
 };
 
-var setupActorSearch = function() {
-  var actorSearch = function(actorId) {
-    $('.appearance[data-actorid="' + actorId + '"]:first').d3Click();
-  };
+var clearBothActors = function() {
+  clearActor('actor1');
+  clearActor('actor2');
+  changeSearch();
+};
 
+var clearActor = function(actorNum) {
+  var appearances = d3.selectAll('.appearance');
+
+  if (actorNum === 'actor1') {
+    appearances.classed('active1', false);
+  } else if (actorNum === 'actor2') {
+    appearances.classed('active2', false);
+  }
+
+  var actor = d3.select('#' + actorNum);
+
+  var actorId = actor.attr('data-actorid');
+  d3.selectAll('.clicked[data-actorid="' + actorId + '"]')
+    .remove();
+
+  var target = actor.attr('data-target');
+  clearActorSearch(target);
+};
+
+var setupActorSearch = function() {
   searchActorSource = new Bloodhound({
     datumTokenizer: Bloodhound.tokenizers.obj.whitespace('ActorName', 'Characters'),
     queryTokenizer: Bloodhound.tokenizers.whitespace,
@@ -166,12 +185,24 @@ var setupActorSearch = function() {
 
   $('#searchInput1').typeahead(typeaheadOptions.opt1, typeaheadOptions.opt2)
     .bind('typeahead:selected', function (obj, datum){
-      actorSearch(datum.ActorID);
+      appearanceClicked(datum,'actor1');
+  }).change(function() {
+    var newVal = $(this).val();
+    if (newVal !== $(this).parents('.actor').attr('data-actorname')) {
+      clearActor('actor1');
+      setCommonalities();
+    }
   });
 
   $('#searchInput2').typeahead(typeaheadOptions.opt1, typeaheadOptions.opt2)
     .bind('typeahead:selected', function (obj, datum){
-      actorSearch(datum.ActorID);
+      appearanceClicked(datum,'actor2');
+  }).change(function() {
+    var newVal = $(this).val();
+    if (newVal !== $(this).parents('.actor').attr('data-actorname')) {
+      clearActor('actor2');
+      setCommonalities();
+    }
   });
 };
 
@@ -193,13 +224,12 @@ var changeSearch = function(actors) {
   var searchData = [];
   if (actors) {
     for (var i = 0; i < actors.length; i++) {
-      if (typeof dataset.searchObj[actors[i]] === 'undefined') {
-        console.log(actors[i]);
-      }
       searchData.push(dataset.searchObj[actors[i]]);
     }
   } else if (searchTitleActors.length) {
-    searchData = searchTitleActors;
+    for (var i = 0; i < searchTitleActors.length; i++) {
+      searchData.push(dataset.searchObj[searchTitleActors[i]]);
+    }
   }
   else {
     searchData = dataset.searchArray;
@@ -354,19 +384,8 @@ var initGraph = function() {
   d3.selectAll('.actorClose')
     .on('click', function(d) {
       var parent = d3.select(this)[0][0].parentNode;
-      if (parent.id === 'actor1') {
-        rects.classed('active1', false);
-      } else if (parent.id === 'actor2') {
-        rects.classed('active2', false);
-      }
-
-      var actorId = d3.select(parent).attr('data-actorid');
-      d3.selectAll('.clicked[data-actorid="' + actorId + '"]')
-        .remove();
-
-      var target = d3.select(this).attr('data-target');
-      clearActorSearch(target);
-
+      var actorNum = parent.id;
+      clearActor(actorNum);
       setCommonalities();
     });
 
@@ -395,54 +414,63 @@ var initGraph = function() {
         $('#actorModal').modal('show');
       }
     });
+};
 
-  var scaleFactor = 3;
-  var appearanceClicked = function(d) {
-    var actors = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
-    if (!d3.select('#actor1').classed('active')) {
-      var target = d3.select('#actor1').attr('data-target');
-      setActorSearch(target, d.ActorID, d.ActorName);
-      actors.classed('active1', true);
-    } else if (!d3.select('#actor2').classed('active')) {
-      var target = d3.select('#actor2').attr('data-target');
-      setActorSearch(target, d.ActorID, d.ActorName);
-      actors.classed('active2', true);
-    }
-    setCommonalities();
-    actors.each(function(d,i) {
-      var x = parseFloat(d3.select(this).attr('x')),
-          y = parseFloat(d3.select(this).attr('y')),
-          w = parseFloat(d3.select(this).attr('width')),
-          h = parseFloat(d3.select(this).attr('height')),
-          cls = d3.select(this).classed('active1') ? 
-            'active1' : 'active2';
-      var clicked = svg.append('rect')
-        .attr('x', x)
-        .attr('y', y)
-        .attr('height', h)
-        .attr('width', w)
-        .attr('data-actorid', d.ActorID)
-        .classed('appearance', true)
-        .classed('clicked', true)
-        .classed(cls, true);
-      clicked.transition()
-        .ease('linear')
-        .attr('x', x - w/scaleFactor)
-        .attr('y', y - h/scaleFactor)
-        .attr('height', h + h*2/scaleFactor)
-        .attr('width', w + w*2/scaleFactor);
-    });
-  };
+var scaleFactor = 3;
+var appearanceClicked = function(d, actorNum) {
+  var actor1 = true;
+  if (typeof actorNum !== 'undefined') {
+    actor1 = (actorNum === 'actor1');
+  } else if (d3.select('#actor1').classed('active')) {
+    actor1 = false;
+  }
 
-  var setCommonalities = function() {
-    var both = d3.select('#actor1').classed('active') &&
-      d3.select('#actor2').classed('active');
-    var neither = !d3.select('#actor1').classed('active') &&
-      !d3.select('#actor2').classed('active');
-    //rects.classed('common', false);
-    if (both) {
-      //rects.classed('clickable', false);
-      rects.style('display',function(d){
+  var actors = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
+  if (actor1) {
+    var target = d3.select('#actor1').attr('data-target');
+    setActorSearch(target, d.ActorID, d.ActorName);
+    actors.classed('active1', true);
+  } else {
+    var target = d3.select('#actor2').attr('data-target');
+    setActorSearch(target, d.ActorID, d.ActorName);
+    actors.classed('active2', true);
+  }
+  setCommonalities();
+  actors.each(function(d,i) {
+    var x = parseFloat(d3.select(this).attr('x')),
+        y = parseFloat(d3.select(this).attr('y')),
+        w = parseFloat(d3.select(this).attr('width')),
+        h = parseFloat(d3.select(this).attr('height')),
+        cls = d3.select(this).classed('active1') ? 
+          'active1' : 'active2';
+    var clicked = d3.select('svg')
+      .append('rect')
+      .attr('x', x)
+      .attr('y', y)
+      .attr('height', h)
+      .attr('width', w)
+      .attr('data-actorid', d.ActorID)
+      .classed('appearance', true)
+      .classed('clicked', true)
+      .classed(cls, true);
+    clicked.transition()
+      .ease('linear')
+      .attr('x', x - w/scaleFactor)
+      .attr('y', y - h/scaleFactor)
+      .attr('height', h + h*2/scaleFactor)
+      .attr('width', w + w*2/scaleFactor);
+  });
+};
+
+var setCommonalities = function() {
+  var both = d3.select('#actor1').classed('active') &&
+    d3.select('#actor2').classed('active');
+  var neither = !d3.select('#actor1').classed('active') &&
+    !d3.select('#actor2').classed('active');
+  if (both) {
+    d3.selectAll('.appearance')
+      .filter(function(d,i) { return !d3.select(this).classed('clicked'); })
+      .style('display',function(d){
         if (d.ActorID === d3.select('#actor1').attr('data-actorid') ||
           d.ActorID === d3.select('#actor2').attr('data-actorid')) {
           return 'inline';
@@ -450,43 +478,44 @@ var initGraph = function() {
           return 'none';
         }
       });
-      showCommonModal();
-    } else if (neither) {
-      //rects.classed('clickable', true);
-      rects.style('display','inline');
-      changeSearch();
-    } else {
-      //rects.classed('clickable', false);
-      getCommonActors();
-    }
-  };
+    showCommonModal();
+  } else if (neither) {
+    d3.selectAll('.appearance')
+      .filter(function(d,i) { return !d3.select(this).classed('clicked'); })
+      .style('display','inline');
+    changeSearch();
+  } else {
+    getCommonActors();
+  }
+};
 
-  var getCommonActors = function() {
-    var actorId = d3.select('#actor1').classed('active') ? 
-      d3.select('#actor1').attr('data-actorid') :
-      d3.select('#actor2').attr('data-actorid');
-    var data = { ActorID: actorId };
-    if ($('#titleSearch').attr('data-titleid').length) { 
-      data.TitleID = $('#titleSearch').attr('data-titleid');
-    }
-    $.ajax({
-      url: '/getCommonActors.json',
-      type: 'GET',
-      dataType: 'json',
-      data: data,
-      success: function(response) {
-        var mapped = d3.set(response);
-        rects.style('display', function(d) {
+var getCommonActors = function() {
+  var actorId = d3.select('#actor1').classed('active') ? 
+    d3.select('#actor1').attr('data-actorid') :
+    d3.select('#actor2').attr('data-actorid');
+  var data = { ActorID: actorId };
+  if ($('#titleSearch').attr('data-titleid').length) { 
+    data.TitleID = $('#titleSearch').attr('data-titleid');
+  }
+  $.ajax({
+    url: '/getCommonActors.json',
+    type: 'GET',
+    dataType: 'json',
+    data: data,
+    success: function(response) {
+      var mapped = d3.set(response);
+      d3.selectAll('.appearance')
+        .filter(function(d,i) { return !d3.select(this).classed('clicked'); })
+        .style('display', function(d) {
           if (mapped.has(d.ActorID) || d.ActorID === actorId) {
             return 'inline';
           } else {
             return 'none';
           }
         });
-        changeSearch(response);
-      }
-    });
-  };
+      changeSearch(response);
+    }
+  });
 };
 
 var showCommonModal = function() {
