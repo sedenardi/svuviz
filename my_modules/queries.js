@@ -2,6 +2,15 @@ var queries = function() {
 
   this.showInfo = function() {
     var sql = '\
+create table rActors ( ActorID varchar(10) ); \
+create index ix on rActors (ActorID); \
+insert into rActors \
+select ActorID \
+from Appearances a \
+where exists \
+  (Select 1 from Titles t \
+    where t.TitleID = a.TitleID \
+    and t.ParentTitleID = \'tt0203259\'); \
 select \
   t.TitleID \
 , t.Season \
@@ -33,14 +42,21 @@ from svumap.Titles t \
             and coalesce(t.ParentTitleID,\'\') <> \'tt0203259\' \
           inner join svumap.Appearances app2 \
             on app2.TitleID = app1.TitleID \
-            and app2.ActorID <> app1.ActorID) c \
+            and app2.ActorID <> app1.ActorID \
+    where exists \
+          (select 1 from rActors ra1 \
+          where ra1.ActorID = app1.ActorID) \
+    and exists \
+          (select 1 from rActors ra2 \
+          where ra2.ActorID = app2.ActorID)) c \
       on c.ActorID1 = a1.ActorID \
   group by a1.ActorID,a1.Name) c \
     on c.ActorID = a.ActorID \
 where t.ParentTitleID = \'tt0203259\' \
 and t.AirDate is not null \
 and c.Commonalities > 0 \
-order by t.AirDate, c.Commonalities desc;';
+order by t.AirDate, c.Commonalities desc; \
+drop table rActors;';
     var cmd = {
       sql: sql,
       inserts: []
