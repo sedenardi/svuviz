@@ -175,6 +175,7 @@ where exists \
         and t2.ParentTitleID = \'tt0203259\')) \
         and ap2.TitleID = ap1.TitleID \
         and ap2.ActorID <> ap1.ActorID)) \
+and coalesce(pt.TitleID,t.TitleID) <> \'tt0203259\' \
 group by TitleID,Title \
 order by Title;';
     return {
