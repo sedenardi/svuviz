@@ -29,6 +29,14 @@ var Web = function(config) {
     });
   });
 
+  app.get('/showInfoArray.json', function (req, res) {
+    var showInfo = queries.showInfoArray();
+    db.query(showInfo.cmd, function(dbRes) {
+      var info = showInfo.process(dbRes[3]);
+      res.json(info.tArray);
+    });
+  });
+
   app.get('/filterTitles.json', function (req, res) {
     var filterTitles = queries.filterTitles();
     db.query(filterTitles, function(dbRes) {

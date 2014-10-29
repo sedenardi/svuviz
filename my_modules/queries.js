@@ -1,6 +1,6 @@
 var queries = function() {
 
-  this.showInfo = function() {
+  var showInfoQuery = function() {
     var sql = '\
 create table rActors ( ActorID varchar(10) ); \
 create index ix on rActors (ActorID); \
@@ -57,10 +57,14 @@ and t.AirDate is not null \
 and c.Commonalities > 0 \
 order by t.AirDate, c.Commonalities desc; \
 drop table rActors;';
-    var cmd = {
+    return {
       sql: sql,
       inserts: []
     };
+  };
+
+  this.showInfo = function() {
+    var cmd = showInfoQuery();
     var process = function(dbRes) {
       var titles = {};
       var actors = {};
@@ -83,6 +87,47 @@ drop table rActors;';
           Character: dbRes[i].Character,
           CharacterID: dbRes[i].CharacterID
         });
+      }
+      var tArray = [];
+      for (var titleId in titles) {
+        tArray.push(titles[titleId]);
+      }
+      return {
+        titles: titles,
+        tArray: tArray/*,
+        actors: actors*/
+      };
+    };
+    return {
+      cmd: cmd,
+      process: process
+    };
+  };
+
+  this.showInfoArray = function() {
+    var cmd = showInfoQuery();
+    var process = function(dbRes) {
+      var titles = {};
+      var actors = {};
+      for (var i = 0; i < dbRes.length; i++) {
+        if (typeof titles[dbRes[i].TitleID] === 'undefined') {
+          titles[dbRes[i].TitleID] = [
+            dbRes[i].TitleID,
+            dbRes[i].Season,
+            dbRes[i].Number,
+            dbRes[i].Title,
+            dbRes[i].Synopsis,
+            dbRes[i].AirDate,
+            []
+          ];
+        }
+        titles[dbRes[i].TitleID][6].push([
+          dbRes[i].ActorID,
+          dbRes[i].ActorName,
+          dbRes[i].Commonalities,
+          dbRes[i].Character,
+          dbRes[i].CharacterID
+        ]);
       }
       var tArray = [];
       for (var titleId in titles) {

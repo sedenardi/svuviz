@@ -1,6 +1,6 @@
 $(document).ready(function(){
   $.ajax({
-    url: 'showInfo.json',
+    url: 'showInfoArray.json',
     cache: true,
     success: function(data) {
       $.ajax({
@@ -29,17 +29,34 @@ $(document).ready(function(){
 });
 
 var prepareDataset = function(obj, tData) {
-  var searchObj = {};
+  var showTitles = [],
+      searchObj = {};
   for (var i = 0; i < obj.length; i++) {
-    for (var j = 0; j < obj[i].Appearances.length; j++) {
-      obj[i].Appearances[j].x = i;
-      obj[i].Appearances[j].Season = obj[i].Season;
-      var actorId = obj[i].Appearances[j].ActorID;
-      var character = obj[i].Appearances[j].Character;
+    showTitles.push({
+      TitleID: obj[i][0],
+      Season: obj[i][1],
+      Number: obj[i][2],
+      Title: obj[i][3],
+      Synopsis: obj[i][4],
+      AirDate: obj[i][5],
+      Appearances: []
+    });
+    for (var j = 0; j < obj[i][6].length; j++) {
+      showTitles[i].Appearances.push({
+        ActorID: obj[i][6][j][0],
+        ActorName: obj[i][6][j][1],
+        Commonalities: obj[i][6][j][2],
+        Character: obj[i][6][j][3],
+        CharacterID: obj[i][6][j][4],
+        x: i,
+        Season: showTitles[i].Season
+      });
+      var actorId = showTitles[i].Appearances[j].ActorID;
+      var character = showTitles[i].Appearances[j].Character;
       if (typeof searchObj[actorId] === 'undefined') {
         searchObj[actorId] = {
           ActorID: actorId,
-          ActorName: obj[i].Appearances[j].ActorName,
+          ActorName: showTitles[i].Appearances[j].ActorName,
           Characters: {}
         };
         searchObj[actorId].Characters[character] = '';
@@ -65,7 +82,7 @@ var prepareDataset = function(obj, tData) {
     searchObj[actorId].Characters = charStr;
   }
   dataset = {
-    showTitles: obj,
+    showTitles: showTitles,
     searchTitles: tData,
     searchObj: searchObj,
     searchArray: searchArray
