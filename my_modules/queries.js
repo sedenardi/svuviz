@@ -145,7 +145,7 @@ drop table rActors;';
     };
   };
 
-  this.filterTitles = function() {
+  var filterTitleQuery = function() {
     var sql = '\
 select \
   coalesce(pt.TitleID,t.TitleID) as TitleID \
@@ -180,6 +180,29 @@ order by Title;';
     return {
       sql: sql,
       inserts: []
+    };
+  };
+
+  this.filterTitles = function() {
+    return filterTitleQuery();
+  };
+
+  this.filterTitlesArray = function() {
+    var cmd = filterTitleQuery();
+    var process = function(dbRes) {
+      var array = [];
+      for (var i = 0; i < dbRes.length; i++) {
+        array.push([
+          dbRes[i].TitleID,
+          dbRes[i].Title,
+          dbRes[i].TV
+        ]);
+      }
+      return array;
+    };
+    return {
+      cmd: cmd,
+      process: process
     };
   };
 

@@ -4,7 +4,7 @@ $(document).ready(function(){
     cache: true,
     success: function(data) {
       $.ajax({
-        url: 'filterTitles.json',
+        url: 'filterTitlesArray.json',
         cache: true,
         success: function(tData) {
           prepareDataset(data, tData);
@@ -81,9 +81,17 @@ var prepareDataset = function(obj, tData) {
     });
     searchObj[actorId].Characters = charStr;
   }
+  var searchTitles = [];
+  for (var i = 0; i < tData.length; i++) {
+    searchTitles.push({
+      TitleID: tData[i][0],
+      Title: tData[i][1],
+      TV: tData[i][2]
+    });
+  }
   dataset = {
     showTitles: showTitles,
-    searchTitles: tData,
+    searchTitles: searchTitles,
     searchObj: searchObj,
     searchArray: searchArray
   };
