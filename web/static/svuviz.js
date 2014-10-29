@@ -498,9 +498,20 @@ var setCommonalities = function() {
       });
     showCommonModal();
   } else if (neither) {
-    d3.selectAll('.appearance')
-      .filter(function(d,i) { return !d3.select(this).classed('clicked'); })
-      .style('display','inline');
+    var appearances = d3.selectAll('.appearance')
+      .filter(function(d,i) { return !d3.select(this).classed('clicked'); });
+    if (searchTitleActors.length) {      
+      var mapped = d3.set(searchTitleActors);
+      appearances.style('display', function(d) {
+        if (mapped.has(d.ActorID)) {
+          return 'inline';
+        } else {
+          return 'none';
+        }
+      });
+    } else {
+      appearances.style('display','inline');
+    }
     changeSearch();
   } else {
     getCommonActors();
