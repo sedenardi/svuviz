@@ -1,33 +1,36 @@
 body {
   padding: 50px 8px 8px;
+  background-color: #424242;
+}
+rect.episode.hover {
+  fill: rgb(255, 0, 0) !important;
 }
 rect.appearance {
-  stroke: rgb(235, 179, 148);
   stroke-width: 0.5px;
   cursor: default;
 }
-rect.clickable {
+rect.appearance.clickable {
   cursor: pointer;
 }
-rect.hover1 {
+rect.appearance.hover1 {
   fill: rgb(255, 0, 0) !important;
 }
-rect.active1 {
+rect.appearance.active1 {
   fill: rgb(255, 0, 0) !important;
 }
 #actor1.active .form-control {
   border-color: rgb(255, 0, 0);
 }
-rect.hover2 {
+rect.appearance.hover2 {
   fill: rgb(0, 255, 0) !important;
 }
-rect.active2 {
+rect.appearance.active2 {
   fill: rgb(0, 255, 0) !important;
 }
 #actor2.active .form-control {
   border-color: rgb(0, 255, 0);
 }
-rect.common {
+rect.appearance.common {
   fill: rgb(235, 179, 148) !important;
 }
 .hoverTooltip {

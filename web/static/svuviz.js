@@ -33,6 +33,7 @@ var prepareDataset = function(obj, tData) {
   for (var i = 0; i < obj.length; i++) {
     for (var j = 0; j < obj[i].Appearances.length; j++) {
       obj[i].Appearances[j].x = i;
+      obj[i].Appearances[j].Season = obj[i].Season;
       var actorId = obj[i].Appearances[j].ActorID;
       var character = obj[i].Appearances[j].Character;
       if (typeof searchObj[actorId] === 'undefined') {
@@ -69,6 +70,8 @@ var prepareDataset = function(obj, tData) {
     searchObj: searchObj,
     searchArray: searchArray
   };
+
+  colorCutoffs = [32,85,179];
 };
 
 var searchTitleActors = [];
@@ -260,11 +263,29 @@ var initGraph = function() {
       return d.Appearances.length;
     });
 
-  var colorScale = d3.scale.log()
+  /*var colorScale = d3.scale.log()
     .domain([1, d3.max(dataset.showTitles, function(d) {
       return d.Appearances[0].Commonalities;
     })])
-    .range([1, 255]);
+    .range([1, 255]);*/
+
+  var getEpisodeColor = function(d) {
+    var i = d.Season % palette.length;
+    return palette[i]['500'];
+  };
+
+  var getAppearanceColor = function(d) {
+    var i = d.Season % palette.length;
+    if (d.Commonalities < colorCutoffs[0]) {
+      return palette[i]['200']; //'#72d572';
+    } else if (d.Commonalities < colorCutoffs[1]) {
+      return palette[i]['400']; //'#259b24';
+    } else if (d.Commonalities < colorCutoffs[2]) {
+      return palette[i]['700']; //'#259b24';
+    } else {
+      return palette[i]['900']; //'#0a7e07';
+    }
+  };
   
   var colors = d3.scale.category20();
 
@@ -285,9 +306,9 @@ var initGraph = function() {
     .attr('y', (height - episodeHeight))
     .attr('height', episodeHeight)
     .attr('width', xScale.rangeBand())
-    .style('fill', function(d) { return colors(d.Season); })
+    .style('fill', getEpisodeColor)
     .on('mouseenter', function(d) {
-      d3.select(this).style('fill', 'rgb(255, 0, 0)');
+      d3.select(this).classed('hover',true);
 
       var xPosition = parseFloat(d3.select(this).attr("x")) + 25;
       if (xPosition > (width - 200)) xPosition -= (200 + 50);
@@ -305,7 +326,7 @@ var initGraph = function() {
       tooltip.classed("hidden", false);
     })
     .on('mouseleave', function(d) {
-      d3.select(this).style('fill', colors(d.Season));
+      d3.select(this).classed('hover',false);
       d3.select("#episodeTooltip").classed("hidden", true);
     });
 
@@ -324,10 +345,7 @@ var initGraph = function() {
     .attr('y', function(d,i) { return height - yScale(i + 1); })
     .attr('height', function(d) { return yHeight; })
     .attr('width', xScale.rangeBand())
-    .style('fill', function(d) {
-      var s = Math.floor(colorScale(d.Commonalities));
-      return 'rgb(0, 0, ' + s + ')';
-    })
+    .style('fill', getAppearanceColor)
     .attr('data-actorid', function(d) { return d.ActorID; })
     .classed('clickable', true)
     .on('mouseenter', function(d) {
