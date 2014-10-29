@@ -93,7 +93,8 @@ var Web = function(config) {
 
   app.get('/getCommonActors.json', function (req, res) {
     if (typeof req.query.ActorID === 'undefined') {
-      res.json(402, { error: 'Must specify ActorID.'});
+      res.status(400).json({ error: 'Must specify ActorID.'});
+      return;
     }
     var query = queries.getCommonActors(req.query.ActorID, req.query.TitleID);
     db.query(query, function(dbRes) {
@@ -107,10 +108,12 @@ var Web = function(config) {
 
   app.get('/getCommonTitles.json', function (req, res) {
     if (typeof req.query.ActorID1 === 'undefined') {
-      res.json(402, { error: 'Must specify ActorID1.'});
+      res.status(400).json({ error: 'Must specify ActorID1.'});
+      return;
     }
     if (typeof req.query.ActorID2 === 'undefined') {
-      res.json(402, { error: 'Must specify ActorID2.'});
+      res.status(400).json({ error: 'Must specify ActorID2.'});
+      return;
     }
     var query = queries.getCommonTitles(req.query.ActorID1,req.query.ActorID2);
     db.query(query, function(dbRes) {
@@ -120,7 +123,8 @@ var Web = function(config) {
 
   app.get('/getActorInfo.json', function (req, res) {
     if (typeof req.query.ActorID === 'undefined') {
-      res.json(402, { error: 'Must specify ActorID.'});
+      res.status(400).json({ error: 'Must specify ActorID.'});
+      return;
     }
     var query = queries.getActorInfo(req.query.ActorID);
     db.query(query, function(dbRes) {
@@ -130,7 +134,8 @@ var Web = function(config) {
 
   app.get('/getTitleActors.json', function (req, res) {
     if (typeof req.query.TitleID === 'undefined') {
-      res.json(402, { error: 'Must specify TitleID.'});
+      res.status(400).json({ error: 'Must specify TitleID.'});
+      return;
     }
     var query = queries.getTitleActors(req.query.TitleID);
     db.query(query, function(dbRes) {
