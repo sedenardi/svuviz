@@ -5,16 +5,23 @@ var config = require('./config.json'),
   EpisodeActorGrabber = require('./my_modules/episodeActorGrabber.js'),
   ActorCreditsGrabber = require('./my_modules/actorCreditsGrabber.js');
 
-var base = new BaseShowScraper(config);
+var svu = 'tt0203259';
+
+var base = new BaseShowScraper(config, svu);
 var cast = new EpisodeActorGrabber(config);
 var credits = new ActorCreditsGrabber(config);
-base.on('done',function() {
-  cast.start();
+
+base.on('done',function(baseId) {
+  logger.log({
+    caller: 'BaseShowScraper',
+    message: 'done',
+    params: baseId
+  });
 });
-cast.on('done',function() {
-  credits.start();
-});
-//base.start();
+
+base.start();
+cast.start();
+credits.start();
 
 var web = new Web(config);
 web.startServer();

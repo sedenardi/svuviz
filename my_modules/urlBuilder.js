@@ -14,12 +14,13 @@ var UrlBuilder = function() {
     };
   };
 
-  this.getSeasonsUrl = function(id) {
+  this.getSeasonsUrl = function(id,season) {
+    var startSeason = (typeof season !== 'undefined') ? season : 1;
     return {
       action: 'getSeasonsUrl',
       titleId: id,
-      season: 1,
-      maxSeason: 1,
+      season: startSeason,
+      maxSeason: startSeason,
       getUrl: function() {
         return baseURL + 'title/' + this.titleId + '/episodes?season=' + this.season;
       },

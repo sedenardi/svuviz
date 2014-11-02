@@ -8,22 +8,33 @@ var logger = require('./logger.js'),
   util = require('util'),
   events = require('events');
 
-var BaseShowScraper = function(config) {
+var BaseShowScraper = function(config, baseId) {
   
   var self = this;
   var db = new DB(config);
   var url = new UrlBuilder();
+
+  var lastSeasonQuery = function() {
+    var sql = 'select coalesce(max(Season),1) as LastSeason from Titles t where ParentTitleID = ?;';
+    return {
+      sql: sql,
+      inserts: [baseId]
+    };
+  };
   
   this.start = function() {
     var baseGrabber = new TitleGrabber(config);
     baseGrabber.on('done', startSeasons);
-    baseGrabber.start(config.baseId);
+    baseGrabber.start(baseId);
   };
   
   var startSeasons = function() {
     db.connect('BaseShowScraper', function() {
-      var seasonUrl = url.getSeasonsUrl(config.baseId);
-      downloadSeason(seasonUrl);
+      db.query(lastSeasonQuery(baseId), function(dbRes) {
+        var season = dbRes[0].LastSeason;
+        var seasonUrl = url.getSeasonsUrl(baseId, season);
+        downloadSeason(seasonUrl);
+      });
     });
   };
 
@@ -52,24 +63,30 @@ var BaseShowScraper = function(config) {
 
   var parseSeason = function(obj) {
     var p = new Parser();
-    p.on('parsed', function(obj) {
+    p.on('parsed', function(parsedObj) {
       logger.log({
         caller: 'Parser',
         message: 'parsed',
-        params: obj.url
+        params: parsedObj.url
       });
-      
-      var cmd = obj.logCmd();
-      db.query(cmd, function() {
-        if (obj.url.hasNextSeason()) {
-          var nextSeason = obj.url.getNextSeason();
+      logParsedTitles(parsedObj);
+    });
+    p.parseSeasonPage(obj);
+  };
+
+  var logParsedTitles = function(parsedObj) {
+    var cmd = parsedObj.logCmd();
+    db.query(cmd, function() {
+      var processCmd = parsedObj.logToProcess()
+      db.query(processCmd, function() {
+        if (parsedObj.url.hasNextSeason()) {
+          var nextSeason = parsedObj.url.getNextSeason();
           downloadSeason(nextSeason);
         } else {
-          self.emit('done');
+          self.emit('done', baseId);
         }
       });
     });
-    p.parseSeasonPage(obj);
   };
 
 };

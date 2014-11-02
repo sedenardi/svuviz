@@ -12,41 +12,44 @@ var EpisodeActorGrabber = function(config) {
   var self = this;
   var db = new DB(config);
   var url = new UrlBuilder();
-  
-  var queueTitles = function() {
-  	return {
-      sql: 'truncate table ProcessTitles; Insert into ProcessTitles(TitleID,Processed) Select TitleID, 0 as `Processed` from Titles where ParentTitleID = ?;',
-      inserts: [config.baseId]
-    };
-  };
+  var total = 0, done = 0;
 
   var getUnprocessed = function() {
     return {
-      sql: 'select * from ProcessTitles where Processed = 0 limit 1;',
+      sql: 'select * from ProcessTitles limit 10;',
       inserts: []
     };
   };
 
   var setProcessed = function(titleId) {
     return {
-      sql: 'update ProcessTitles set Processed = 1 where TitleID = ?;',
+      sql: 'delete from ProcessTitles where TitleID = ?;',
       inserts: [titleId]
     };
   };
   
   this.start = function() {
-    db.connect('EpisodeActorGrabber', function(){
-      db.query(queueTitles(),checkUnprocessed);
-    });
+    db.connect('EpisodeActorGrabber', checkUnprocessed);
   };
   
   var checkUnprocessed = function() {
     db.query(getUnprocessed(), function(res){
       if (res.length) {
-        var titleId = res[0].TitleID;
-        downloadCredits(titleId);
+        logger.log({
+          caller: 'EpisodeActorGrabber',
+          message: 'Found ' + res.length + ' unprocessed titles'
+        });
+        total = res.length;
+        done = 0;
+        for (var i = 0; i < res.length; i++) {
+          downloadCredits(res[i].TitleID);  
+        }
       } else {
-        quit();
+        logger.log({
+          caller: 'EpisodeActorGrabber',
+          message: 'No unprocessed, checking again in 30 seconds'
+        });
+        setTimeout(checkUnprocessed, 30000);
       }
     });
   };
@@ -78,30 +81,38 @@ var EpisodeActorGrabber = function(config) {
 
   var parseCreditsPage = function(obj) {
     var p = new Parser();
-    p.on('parsed', function(obj) {
+    p.on('parsed', function(parsedObj) {
       logger.log({
         caller: 'Parser',
         message: 'parsed',
-        params: obj.url
+        params: parsedObj.url
       });
       
-      db.query(obj.logActorsCmd(),function() {
-        db.query(obj.logCastCmd(),function() {
-          db.query(setProcessed(obj.url.titleId),checkUnprocessed);
+      db.query(parsedObj.logActorsCmd(),function() {
+        db.query(parsedObj.logCastCmd(),function() {
+          db.query(parsedObj.logToProcess(), function() {
+            db.query(setProcessed(parsedObj.url.titleId), function() {
+              done++;
+              if (done === total) {
+                checkUnprocessed();
+              }
+            });
+          });
         });
       });
     });
+
     p.parseTitleCreditsPage(obj);
   };
 
-  var quit = function() {
-  	db.disconnect();
-  	logger.log({
-      caller: 'EpisodeActorGrabber',
-      message: 'Exiting'
-  	});
-    self.emit('done');
-  };
+  // var quit = function() {
+  // 	db.disconnect();
+  // 	logger.log({
+  //     caller: 'EpisodeActorGrabber',
+  //     message: 'Exiting'
+  // 	});
+  //   self.emit('done');
+  // };
 
 };
 

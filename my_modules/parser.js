@@ -92,7 +92,33 @@ var Parser = function() {
           inserts.push(this.episodes[i].synopsis);
           inserts.push(this.episodes[i].airDate);
         }
+        var updateSql = 'update Titles set Season = ?, Number = ?, Synopsis = ?, AirDate = ? where TitleID = ?;';
+        var updateArray = [];
+        for (var i = 0; i < this.episodes.length; i++) {
+          updateArray.push(updateSql);
+          inserts.push(this.episodes[i].season);
+          inserts.push(this.episodes[i].episode);
+          inserts.push(this.episodes[i].synopsis);
+          inserts.push(this.episodes[i].airDate);
+          inserts.push(this.episodes[i].titleId);
+        }
         sql += selects.join(' UNION ') + ') t1 where not exists (select 1 from Titles t where t.TitleID = t1.TitleID);';
+        sql += updateArray.join('');
+        return {
+          sql: sql,
+          inserts: inserts
+        };
+      },
+      logToProcess: function() {
+        var sql = 'Insert into ProcessTitles(TitleID) select * from (';
+        var s = 'select ? as `TitleID`';
+        var selects = [];
+        var inserts = [];
+        for (var i = 0; i < this.episodes.length; i++) {
+          selects.push(s);
+          inserts.push(this.episodes[i].titleId);
+        }
+        sql += selects.join(' UNION ') + ') t1 where not exists (select 1 from ProcessTitles t where t.TitleID = t1.TitleID);';
         return {
           sql: sql,
           inserts: inserts
@@ -174,7 +200,32 @@ var Parser = function() {
           inserts.push(this.cast[i].character);
           inserts.push(this.cast[i].characterId);
         }
+        var updateSql = 'update Appearances set `Character` = ?, CharacterID = ? where ActorID = ? and TitleID = ?;';
+        var updateArray = [];
+        for (var i = 0; i < this.cast.length; i++) {
+          updateArray.push(updateSql);
+          inserts.push(this.cast[i].character);
+          inserts.push(this.cast[i].characterId);
+          inserts.push(this.cast[i].actorId);
+          inserts.push(this.url.titleId);
+        }
         sql += selects.join(' UNION ') + ') t1 where not exists (select 1 from Appearances t where t.ActorID = t1.ActorID and t.TitleID = t1.TitleID);';
+        sql += updateArray.join('');
+        return {
+          sql: sql,
+          inserts: inserts
+        };
+      },
+      logToProcess: function() {
+        var sql = 'Insert into ProcessActors(ActorID) select * from (';
+        var s = 'select ? as `ActorID`';
+        var selects = [];
+        var inserts = [];
+        for (var i = 0; i < this.cast.length; i++) {
+          selects.push(s);
+          inserts.push(this.cast[i].actorId);
+        }
+        sql += selects.join(' UNION ') + ') t1 where not exists (select 1 from ProcessActors t where t.ActorID = t1.ActorID);';
         return {
           sql: sql,
           inserts: inserts
