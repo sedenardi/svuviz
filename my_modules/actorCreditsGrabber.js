@@ -16,9 +16,16 @@ var ActorCreditsGrabber = function(config) {
   var moreLinksIndex = 0;
   var total = 0, done = 0;
 
+  var queueUpAllActors = function() {
+    return {
+      sql: 'Insert into ProcessActors(ActorID) select ActorID from Actors a where not exists (select 1 from ProcessActors pa where pa.ActorID = a.ActorID);',
+      inserts: []
+    };
+  };
+
   var getUnprocessed = function() {
     return {
-      sql: 'select * from ProcessActors limit 20;',
+      sql: 'select * from ProcessActors limit 30;',
       inserts: []
     };
   };
@@ -30,9 +37,19 @@ var ActorCreditsGrabber = function(config) {
     };
   };
   
-  this.start = function() {
+  this.start = function(queueAll) {
     db.connect('ActorCreditsGrabber', function(){
-      checkUnprocessed();
+      if (typeof queueAll !== 'undefined' && queueAll) {
+        logger.log({
+          caller: 'ActorCreditsGrabber',
+          message: 'Queueing all actors'
+        });
+        db.query(queueUpAllActors(), function() {
+          checkUnprocessed();
+        });
+      } else {
+        checkUnprocessed();
+      }
     });
   };
   
@@ -85,31 +102,35 @@ var ActorCreditsGrabber = function(config) {
 
   var parseCreditsPage = function(obj) {
     var p = new Parser();
-    p.on('parsed', function(obj) {
-      logger.log({
-        caller: 'Parser',
-        message: 'parsed',
-        params: obj.url
-      });
+    p.on('parsed', function(parsedObj) {
+      // logger.log({
+      //   caller: 'Parser',
+      //   message: 'parsed',
+      //   params: parsedObj.url
+      // });
       
-      db.query(obj.logTitlesCmd(),function() {
-        db.query(obj.logAppearancesCmd(),function() {
-          var moreLinks = obj.getMoreLinks();
-          if (moreLinks.length) {
-            var moreLinksObj = {
-              moreLinks: moreLinks,
-              moreLinksDone: 0
-            };
-            for (var i = 0; i < moreLinks.length; i++) {
-              downloadMoreLink(moreLinksObj, i);
+      if (parsedObj.credits.length) {
+        db.query(parsedObj.logTitlesCmd(),function() {
+          db.query(parsedObj.logAppearancesCmd(),function() {
+            var moreLinks = parsedObj.getMoreLinks();
+            if (moreLinks.length) {
+              var moreLinksObj = {
+                moreLinks: moreLinks,
+                moreLinksDone: 0
+              };
+              for (var i = 0; i < moreLinks.length; i++) {
+                downloadMoreLink(moreLinksObj, i);
+              }
+            } else {
+              markProcessed(parsedObj.url.actorId);
             }
-          } else {
-            markProcessed(obj.url.actorId);
-          }
+          });
         });
-      });
+      } else {
+        markProcessed(parsedObj.url.actorId);
+      }
     });
-    p.parseArtistCreditsPage(obj, config.baseId);
+    p.parseActorCreditsPage(obj, config.baseId);
   };
 
   var downloadMoreLink = function(moreLinksObj, index) {
@@ -140,12 +161,12 @@ var ActorCreditsGrabber = function(config) {
   var parseMoreLink = function(moreLinksObj, obj) {
     var p = new Parser();
     p.on('parsed', function(parsedObj) {
-      logger.log({
-        caller: 'Parser',
-        message: 'parsed',
-        params: parsedObj.url
-      });
-      
+      // logger.log({
+      //   caller: 'Parser',
+      //   message: 'parsed',
+      //   params: parsedObj.url
+      // });
+
       db.query(parsedObj.logTitlesCmd(),function() {
         db.query(parsedObj.logAppearancesCmd(),function() {
           moreLinksObj.moreLinksDone++;
@@ -160,21 +181,17 @@ var ActorCreditsGrabber = function(config) {
 
   var markProcessed = function(actorId) {
     db.query(setProcessed(actorId), function() {
+      logger.log({
+        caller: 'ActorCreditsGrabber',
+        message: 'MarkProcessed',
+        params: { actorId: actorId }
+      });
       done++;
       if (done === total) {
         checkUnprocessed();
       }
     });
   };
-
-  // var quit = function() {
-  // 	db.disconnect();
-  // 	logger.log({
-  //     caller: 'ActorCreditsGrabber',
-  //     message: 'Exiting'
-  // 	});
-  //   self.emit('done');
-  // };
 
 };
 

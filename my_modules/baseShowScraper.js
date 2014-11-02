@@ -8,7 +8,7 @@ var logger = require('./logger.js'),
   util = require('util'),
   events = require('events');
 
-var BaseShowScraper = function(config, baseId) {
+var BaseShowScraper = function(config, baseId, firstSeason) {
   
   var self = this;
   var db = new DB(config);
@@ -30,11 +30,17 @@ var BaseShowScraper = function(config, baseId) {
   
   var startSeasons = function() {
     db.connect('BaseShowScraper', function() {
-      db.query(lastSeasonQuery(baseId), function(dbRes) {
-        var season = dbRes[0].LastSeason;
+      if (typeof firstSeason !== 'undefined' && firstSeason) {
+        var season = 1;
         var seasonUrl = url.getSeasonsUrl(baseId, season);
         downloadSeason(seasonUrl);
-      });
+      } else {
+        db.query(lastSeasonQuery(baseId), function(dbRes) {
+          var season = dbRes[0].LastSeason;
+          var seasonUrl = url.getSeasonsUrl(baseId, season);
+          downloadSeason(seasonUrl);
+        });
+      }
     });
   };
 

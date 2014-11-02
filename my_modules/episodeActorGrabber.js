@@ -82,16 +82,21 @@ var EpisodeActorGrabber = function(config) {
   var parseCreditsPage = function(obj) {
     var p = new Parser();
     p.on('parsed', function(parsedObj) {
-      logger.log({
-        caller: 'Parser',
-        message: 'parsed',
-        params: parsedObj.url
-      });
+      // logger.log({
+      //   caller: 'Parser',
+      //   message: 'parsed',
+      //   params: parsedObj.url
+      // });
       
       db.query(parsedObj.logActorsCmd(),function() {
         db.query(parsedObj.logCastCmd(),function() {
           db.query(parsedObj.logToProcess(), function() {
             db.query(setProcessed(parsedObj.url.titleId), function() {
+              logger.log({
+                caller: 'EpisodeActorGrabber',
+                message: 'MarkProcessed',
+                params: { titleId: parsedObj.url.titleId }
+              });
               done++;
               if (done === total) {
                 checkUnprocessed();

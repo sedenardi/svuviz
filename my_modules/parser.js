@@ -235,7 +235,7 @@ var Parser = function() {
     self.emit('parsed', castObj);
   };
 
-  this.parseArtistCreditsPage = function(rawObj, excludedTitleId) {
+  this.parseActorCreditsPage = function(rawObj, excludedTitleId) {
     var obj = parse(rawObj);
 
     var credits = [];
@@ -285,7 +285,7 @@ var Parser = function() {
           characterId = obj.$(this).find('a:not(.in_production)').eq(1).attr('href').split('/')[2];
         } else {
           var raw = obj.$(this).html().split('<br>')[1].trim();
-          character = obj.$(raw).text().trim().replace('\n',' ');
+          character = obj.$(raw).text().trim().replace(/\s{2,}/g, ' ');
         }
       }
       if (titleId !== excludedTitleId) {

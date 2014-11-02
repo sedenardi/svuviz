@@ -62,16 +62,23 @@ var DB = function(config){
   };
 
   /**** FUNCTIONS ****/
-  this.query = function(cmd, next) {
+  this.query = function(cmd, next, attempt) {
+    if (typeof attempt === 'undefined') attempt = 1;
     var sql = connection.format(cmd.sql, cmd.inserts);
     connection.query(sql, function(err, res) {
       if (err) {
-        console.log('MYSQL: ' + sql + ' \n' + err);
         logger.log({
           caller: 'MYSQL',
           message: err,
           data: sql
         });
+        if (err.code === 'ER_LOCK_DEADLOCK') {
+          console.log('Attempt ' + attempt);
+          if (attempt <= 3) {
+            attempt++;
+            self.query(cmd, next, attempt);
+          }
+        } 
       } else if (typeof next === 'function') {
         next(res);
       }
