@@ -96,8 +96,13 @@ var ActorCreditsGrabber = function(config) {
         db.query(obj.logAppearancesCmd(),function() {
           var moreLinks = obj.getMoreLinks();
           if (moreLinks.length) {
-            var moreLinksIndex = 0;
-            nextMoreLink(moreLinks, moreLinksIndex);
+            var moreLinksObj = {
+              moreLinks: moreLinks,
+              moreLinksDone: 0
+            };
+            for (var i = 0; i < moreLinks.length; i++) {
+              downloadMoreLink(moreLinksObj, i);
+            }
           } else {
             markProcessed(obj.url.actorId);
           }
@@ -107,20 +112,12 @@ var ActorCreditsGrabber = function(config) {
     p.parseArtistCreditsPage(obj, config.baseId);
   };
 
-  var nextMoreLink = function(moreLinks, moreLinksIndex) {
-    if (moreLinksIndex < moreLinks.length) {
-      downloadMoreLink(moreLinks, moreLinksIndex);
-    } else {
-      markProcessed(moreLinks[0].actorId);
-    }
-  };
-
-  var downloadMoreLink = function(moreLinks, moreLinksIndex) {
-    var urlObj = url.getMoreEpisodesUrl(moreLinks[moreLinksIndex]);
+  var downloadMoreLink = function(moreLinksObj, index) {
+    var urlObj = url.getMoreEpisodesUrl(moreLinksObj.moreLinks[index]);
 
     var dl = new Downloader();
     dl.on('data', function(obj) {
-      parseMoreLink(moreLinks, moreLinksIndex, obj);
+      parseMoreLink(moreLinksObj, obj);
     });
     
     dl.on('error', function(logObj) {
@@ -140,19 +137,21 @@ var ActorCreditsGrabber = function(config) {
     dl.download(urlObj);
   };
 
-  var parseMoreLink = function(moreLinks, moreLinksIndex, obj) {
+  var parseMoreLink = function(moreLinksObj, obj) {
     var p = new Parser();
-    p.on('parsed', function(obj) {
+    p.on('parsed', function(parsedObj) {
       logger.log({
         caller: 'Parser',
         message: 'parsed',
-        params: obj.url
+        params: parsedObj.url
       });
       
-      db.query(obj.logTitlesCmd(),function() {
-        db.query(obj.logAppearancesCmd(),function() {
-          moreLinksIndex++;
-          nextMoreLink(moreLinks, moreLinksIndex);
+      db.query(parsedObj.logTitlesCmd(),function() {
+        db.query(parsedObj.logAppearancesCmd(),function() {
+          moreLinksObj.moreLinksDone++;
+          if (moreLinksObj.moreLinksDone === moreLinksObj.moreLinks.length) {
+            markProcessed(moreLinksObj.moreLinks[0].actorId);
+          }
         });
       });
     });
