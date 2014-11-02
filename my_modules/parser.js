@@ -299,7 +299,6 @@ var Parser = function() {
         });
       }
     });
-    //console.log(JSON.stringify(credits));
     var creditsObj = {
       url: obj.url,
       credits: credits,
@@ -359,7 +358,27 @@ var Parser = function() {
             inserts.push(this.credits[i].characterId);
           }
         }
+        var updateSql = 'update Appearances set `Character` = ?, CharacterID = ? where ActorID = ? and TitleID = ?;';
+        var updateArray = [];
+        for (var i = 0; i < this.credits.length; i++) {
+          if (this.credits[i].episodes.length) {
+            for (var j = 0; j < this.credits[i].episodes.length; j++) {
+              updateArray.push(updateSql);
+              inserts.push(this.credits[i].episodes[j].episodeCharacter);
+              inserts.push(this.credits[i].episodes[j].episodeCharacterId);
+              inserts.push(this.url.actorId);
+              inserts.push(this.credits[i].episodes[j].episodeId);
+            }
+          } else {
+            updateArray.push(updateSql);
+            inserts.push(this.credits[i].character);
+            inserts.push(this.credits[i].characterId);
+            inserts.push(this.url.actorId);
+            inserts.push(this.credits[i].titleId);
+          }
+        }
         sql += selects.join(' UNION ') + ') t1 where not exists (select 1 from Appearances t where t.ActorID = t1.ActorID and t.TitleID = t1.TitleID);';
+        sql += updateArray.join('');
         return {
           sql: sql,
           inserts: inserts
@@ -425,7 +444,17 @@ var Parser = function() {
           inserts.push(this.episodes[i].episodeCharacter);
           inserts.push(this.episodes[i].episodeCharacterId);
         }
+        var updateSql = 'update Appearances set `Character` = ?, CharacterID = ? where ActorID = ? and TitleID = ?;';
+        var updateArray = [];
+        for (var i = 0; i < this.episodes.length; i++) {
+          updateArray.push(updateSql);
+          inserts.push(this.episodes[i].episodeCharacter);
+          inserts.push(this.episodes[i].episodeCharacterId);
+          inserts.push(this.url.moreLinkObj.actorId);
+          inserts.push(this.episodes[i].episodeId);
+        }
         sql += selects.join(' UNION ') + ') t1 where not exists (select 1 from Appearances t where t.ActorID = t1.ActorID and t.TitleID = t1.TitleID);';
+        sql += updateArray.join('');
         return {
           sql: sql,
           inserts: inserts
