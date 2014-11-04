@@ -45,6 +45,18 @@ var Web = function(config) {
     });
   });
 
+  app.get('/getColorCutoffs.json', function (req, res) {
+    if (typeof req.query.BaseTitleID === 'undefined') {
+      res.status(400).json({ error: 'Must specify BaseTitleID.'});
+      return;
+    }
+    var showInfo = queries.getColorCutoffs(req.query.BaseTitleID);
+    db.query(showInfo, function(dbRes) {
+      var cutoffs = [dbRes[8][0].first, dbRes[8][0].second, dbRes[8][0].third];
+      res.json(cutoffs);
+    });
+  });
+
   app.get('/filterTitles.json', function (req, res) {
     if (typeof req.query.BaseTitleID === 'undefined') {
       res.status(400).json({ error: 'Must specify BaseTitleID.'});

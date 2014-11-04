@@ -145,6 +145,64 @@ drop table rActors;';
     };
   };
 
+  this.getColorCutoffs = function(baseTitleId) {
+    var sql = '\
+create table rActors ( ActorID varchar(10) ); \
+create index ix on rActors (ActorID); \
+insert into rActors \
+select ActorID \
+from Appearances a \
+where exists \
+  (Select 1 from Titles t \
+    where t.TitleID = a.TitleID \
+    and t.ParentTitleID = ?); \
+create table commonalities ( Commonalities int, Row int ); \
+SET @row_number:=0; \
+insert into commonalities \
+select \
+  Commonalities, \
+  @row_number:=@row_number+1 \
+from \
+  (select \
+    a1.ActorID \
+  , a1.Name \
+  , count(distinct c.ActorID2) as Commonalities \
+  from svumap.Actors a1 \
+    left outer join \
+        (select \
+          app1.ActorID as ActorID1 \
+        , app2.ActorID as ActorID2 \
+        from svumap.Appearances app1 \
+          inner join svumap.Titles t \
+            on t.TitleID = app1.TitleID \
+            and coalesce(t.ParentTitleID,\'\') <> ? \
+          inner join svumap.Appearances app2 \
+            on app2.TitleID = app1.TitleID \
+            and app2.ActorID <> app1.ActorID \
+    where exists \
+          (select 1 from rActors ra1 \
+          where ra1.ActorID = app1.ActorID) \
+    and exists \
+          (select 1 from rActors ra2 \
+          where ra2.ActorID = app2.ActorID)) c \
+      on c.ActorID1 = a1.ActorID \
+  group by a1.ActorID,a1.Name) c \
+where c.Commonalities > 0 \
+order by c.Commonalities asc; \
+set @total := 0; \
+select @total := count(1) from commonalities; \
+select \
+  (select Commonalities from commonalities where row = FLOOR(@total/4)) as first, \
+  (select Commonalities from commonalities where row = FLOOR(2*@total/4)) as second, \
+  (select Commonalities from commonalities where row = FLOOR(3*@total/4)) as third; \
+drop table rActors; \
+drop table commonalities;';
+    return {
+      sql: sql,
+      inserts: [baseTitleId,baseTitleId]
+    };
+  };
+
   var filterTitleQuery = function(baseTitleId) {
     var sql = '\
 select \

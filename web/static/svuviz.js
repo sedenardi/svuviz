@@ -100,7 +100,7 @@ var prepareDataset = function(obj, tData) {
     searchArray: searchArray
   };
 
-  colorCutoffs = [32,85,179];
+  colorCutoffs = [32,87,183];
 };
 
 var searchTitleActors = [];
