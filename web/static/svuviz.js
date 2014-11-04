@@ -626,9 +626,8 @@ var processModalResults = function(data) {
     }
   }
   return {
-    svu: svu,
     movies: movies,
-    tv: tv
+    tv: svu.concat(tv)
   };
 };
 

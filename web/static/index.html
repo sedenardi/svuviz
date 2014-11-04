@@ -137,13 +137,8 @@
           </h4>
         </div>
       </div>
-      <h4>TV Shows</h4>
-      {{#if processed.svu.length}}
-      {{#each processed.svu}}
-        {{>commonRow this}}
-      {{/each}}
-      {{/if}}
       {{#if processed.tv.length}}
+      <h4>TV Shows</h4>
       {{#each processed.tv}}
         {{>commonRow this}}
       {{/each}}
@@ -172,13 +167,8 @@
     </script>
 
     <script id="actorModal-template" type="text/x-handlebars-template">
-      <h4>TV Shows</h4>
-      {{#if processed.svu.length}}
-      {{#each processed.svu}}
-        {{>actorRow this}}
-      {{/each}}
-      {{/if}}
       {{#if processed.tv.length}}
+      <h4>TV Shows</h4>
       {{#each processed.tv}}
         {{>actorRow this}}
       {{/each}}
