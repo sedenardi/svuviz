@@ -1,10 +1,14 @@
+BaseTitleID = 'tt0203259'; //svu
+
 $(document).ready(function(){
   $.ajax({
     url: 'showInfoArray.json',
+    data: { BaseTitleID: BaseTitleID },
     cache: true,
     success: function(data) {
       $.ajax({
         url: 'filterTitlesArray.json',
+        data: { BaseTitleID: BaseTitleID },
         cache: true,
         success: function(tData) {
           prepareDataset(data, tData);
@@ -128,7 +132,7 @@ var setupTitleSearch = function() {
     $('#titleSearch').attr('data-title', datum.Title);
     $.ajax({
       url: 'getTitleActors.json',
-      data: { TitleID: datum.TitleID },
+      data: { BaseTitleID: BaseTitleID, TitleID: datum.TitleID },
       cache: true,
       success: function(response) {
         searchTitleActors = response;
@@ -547,7 +551,7 @@ var getCommonActors = function() {
   var actorId = d3.select('#actor1').classed('active') ? 
     d3.select('#actor1').attr('data-actorid') :
     d3.select('#actor2').attr('data-actorid');
-  var data = { ActorID: actorId };
+  var data = { BaseTitleID: BaseTitleID, ActorID: actorId };
   if ($('#titleSearch').attr('data-titleid').length) { 
     data.TitleID = $('#titleSearch').attr('data-titleid');
   }

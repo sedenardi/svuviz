@@ -6,8 +6,9 @@ var config = require('./config.json'),
   ActorCreditsGrabber = require('./my_modules/actorCreditsGrabber.js');
 
 var svu = 'tt0203259';
+var friends = 'tt0108778';
 
-var base = new BaseShowScraper(config, svu);
+var base = new BaseShowScraper(config, friends);
 var cast = new EpisodeActorGrabber(config);
 var credits = new ActorCreditsGrabber(config);
 
@@ -19,9 +20,9 @@ base.on('done',function(baseId) {
   });
 });
 
-base.start();
-cast.start();
-credits.start();
+//base.start();
+//cast.start();
+//credits.start();
 
 var web = new Web(config);
 web.startServer();

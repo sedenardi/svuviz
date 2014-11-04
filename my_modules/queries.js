@@ -1,6 +1,6 @@
 var queries = function() {
 
-  var showInfoQuery = function() {
+  var showInfoQuery = function(baseTitleId) {
     var sql = '\
 create table rActors ( ActorID varchar(10) ); \
 create index ix on rActors (ActorID); \
@@ -10,7 +10,7 @@ from Appearances a \
 where exists \
   (Select 1 from Titles t \
     where t.TitleID = a.TitleID \
-    and t.ParentTitleID = \'tt0203259\'); \
+    and t.ParentTitleID = ?); \
 select \
   t.TitleID \
 , t.Season \
@@ -39,7 +39,7 @@ from svumap.Titles t \
         from svumap.Appearances app1 \
           inner join svumap.Titles t \
             on t.TitleID = app1.TitleID \
-            and coalesce(t.ParentTitleID,\'\') <> \'tt0203259\' \
+            and coalesce(t.ParentTitleID,\'\') <> ? \
           inner join svumap.Appearances app2 \
             on app2.TitleID = app1.TitleID \
             and app2.ActorID <> app1.ActorID \
@@ -52,19 +52,19 @@ from svumap.Titles t \
       on c.ActorID1 = a1.ActorID \
   group by a1.ActorID,a1.Name) c \
     on c.ActorID = a.ActorID \
-where t.ParentTitleID = \'tt0203259\' \
+where t.ParentTitleID = ? \
 and t.AirDate is not null \
 and c.Commonalities > 0 \
 order by t.AirDate, c.Commonalities desc; \
 drop table rActors;';
     return {
       sql: sql,
-      inserts: []
+      inserts: [baseTitleId,baseTitleId,baseTitleId]
     };
   };
 
-  this.showInfo = function() {
-    var cmd = showInfoQuery();
+  this.showInfo = function(baseTitleId) {
+    var cmd = showInfoQuery(baseTitleId);
     var process = function(dbRes) {
       var titles = {};
       var actors = {};
@@ -104,8 +104,8 @@ drop table rActors;';
     };
   };
 
-  this.showInfoArray = function() {
-    var cmd = showInfoQuery();
+  this.showInfoArray = function(baseTitleId) {
+    var cmd = showInfoQuery(baseTitleId);
     var process = function(dbRes) {
       var titles = {};
       var actors = {};
@@ -145,7 +145,7 @@ drop table rActors;';
     };
   };
 
-  var filterTitleQuery = function() {
+  var filterTitleQuery = function(baseTitleId) {
     var sql = '\
 select \
   coalesce(pt.TitleID,t.TitleID) as TitleID \
@@ -162,7 +162,7 @@ where exists \
     and exists \
       (Select 1 from Titles t1 \
       where t1.TitleID = acp1.TitleID \
-      and t1.ParentTitleID = \'tt0203259\')) \
+      and t1.ParentTitleID = baseTitleId)) \
   and ap1.TitleID = t.TitleID \
     and exists \
     (Select 1 from Appearances ap2 \
@@ -172,24 +172,24 @@ where exists \
       and exists \
         (Select 1 from Titles t2 \
         where t2.TitleID = acp2.TitleID \
-        and t2.ParentTitleID = \'tt0203259\')) \
+        and t2.ParentTitleID = ?)) \
         and ap2.TitleID = ap1.TitleID \
         and ap2.ActorID <> ap1.ActorID)) \
-and coalesce(pt.TitleID,t.TitleID) <> \'tt0203259\' \
+and coalesce(pt.TitleID,t.TitleID) <> ? \
 group by TitleID,Title \
 order by Title;';
     return {
       sql: sql,
-      inserts: []
+      inserts: [baseTitleId,baseTitleId,baseTitleId]
     };
   };
 
-  this.filterTitles = function() {
-    return filterTitleQuery();
+  this.filterTitles = function(baseTitleId) {
+    return filterTitleQuery(baseTitleId);
   };
 
-  this.filterTitlesArray = function() {
-    var cmd = filterTitleQuery();
+  this.filterTitlesArray = function(baseTitleId) {
+    var cmd = filterTitleQuery(baseTitleId);
     var process = function(dbRes) {
       var array = [];
       for (var i = 0; i < dbRes.length; i++) {
@@ -207,116 +207,116 @@ order by Title;';
     };
   };
 
-  this.actorsAndTitles = function() {
-    var sql = '\
-select distinct \
-  a1.ActorID \
-, a1.Name \
-, app1.Character \
-, app1.CharacterID \
-, t.TitleID \
-, t.Title \
-, t.ParentTitleID \
-, pt.Title as ParentTitle \
-from svumap.Actors a1 \
-  inner join svumap.Appearances app1 \
-    on a1.ActorID = app1.ActorID \
-  inner join svumap.Titles t \
-    on t.TitleID = app1.TitleID \
-  left outer join svumap.Titles pt \
-    on pt.TitleID = t.ParentTitleID \
-where t.ParentTitleID <> \'tt0203259\' \
-and exists \
-  (Select 1 from svumap.Appearances app2 \
-  where app2.TitleID = app1.TitleID \
-  and app2.ActorID <> app1.ActorID);';
-    var cmd = {
-      sql: sql,
-      inserts: []
-    };
-    var process = function(dbRes) {
-      var actors = {};
-      var titles = {};
-      for (var i = 0; i < dbRes.length; i++) {
-        if (typeof actors[dbRes[i].ActorID] === 'undefined') {
-          actors[dbRes[i].ActorID] = {
-            //ActorID: dbRes[i].ActorID,
-            Name: dbRes[i].Name,
-            Appearances: []
-          };
-        }
-        actors[dbRes[i].ActorID].Appearances.push({
-          //ActorID: dbRes[i].ActorID,
-          TitleID: dbRes[i].TitleID,
-          Character: dbRes[i].Character,
-          CharacterID: dbRes[i].CharacterID
-        });
-        if (typeof titles[dbRes[i].TitleID] === 'undefined') {
-          titles[dbRes[i].TitleID] = {
-            //TitleID: dbRes[i].TitleID,
-            Title: dbRes[i].Title,
-            ParentTitleID: dbRes[i].ParentTitleID,
-            ParentTitle: dbRes[i].ParentTitle/*,
-            Appearances: []*/
-          };
-        }
-        /*titles[dbRes[i].TitleID].Appearances.push({
-          ActorID: dbRes[i].ActorID,
-          Character: dbRes[i].Character,
-          CharacterID: dbRes[i].CharacterID
-        });*/
-      }
-      return {
-        titles: titles,
-        actors: actors
-      };
-    };
-    return {
-      cmd: cmd,
-      process: process
-    };
-  };
+//   this.actorsAndTitles = function(baseTitleId) {
+//     var sql = '\
+// select distinct \
+//   a1.ActorID \
+// , a1.Name \
+// , app1.Character \
+// , app1.CharacterID \
+// , t.TitleID \
+// , t.Title \
+// , t.ParentTitleID \
+// , pt.Title as ParentTitle \
+// from svumap.Actors a1 \
+//   inner join svumap.Appearances app1 \
+//     on a1.ActorID = app1.ActorID \
+//   inner join svumap.Titles t \
+//     on t.TitleID = app1.TitleID \
+//   left outer join svumap.Titles pt \
+//     on pt.TitleID = t.ParentTitleID \
+// where t.ParentTitleID <> ? \
+// and exists \
+//   (Select 1 from svumap.Appearances app2 \
+//   where app2.TitleID = app1.TitleID \
+//   and app2.ActorID <> app1.ActorID);';
+//     var cmd = {
+//       sql: sql,
+//       inserts: [baseTitleId]
+//     };
+//     var process = function(dbRes) {
+//       var actors = {};
+//       var titles = {};
+//       for (var i = 0; i < dbRes.length; i++) {
+//         if (typeof actors[dbRes[i].ActorID] === 'undefined') {
+//           actors[dbRes[i].ActorID] = {
+//             //ActorID: dbRes[i].ActorID,
+//             Name: dbRes[i].Name,
+//             Appearances: []
+//           };
+//         }
+//         actors[dbRes[i].ActorID].Appearances.push({
+//           //ActorID: dbRes[i].ActorID,
+//           TitleID: dbRes[i].TitleID,
+//           Character: dbRes[i].Character,
+//           CharacterID: dbRes[i].CharacterID
+//         });
+//         if (typeof titles[dbRes[i].TitleID] === 'undefined') {
+//           titles[dbRes[i].TitleID] = {
+//             //TitleID: dbRes[i].TitleID,
+//             Title: dbRes[i].Title,
+//             ParentTitleID: dbRes[i].ParentTitleID,
+//             ParentTitle: dbRes[i].ParentTitle/*,
+//             Appearances: []*/
+//           };
+//         }
+//         /*titles[dbRes[i].TitleID].Appearances.push({
+//           ActorID: dbRes[i].ActorID,
+//           Character: dbRes[i].Character,
+//           CharacterID: dbRes[i].CharacterID
+//         });*/
+//       }
+//       return {
+//         titles: titles,
+//         actors: actors
+//       };
+//     };
+//     return {
+//       cmd: cmd,
+//       process: process
+//     };
+//   };
 
-  this.commonalities = function() {
-    var sql = '\
-select \
-  app1.ActorID as ActorID1 \
-, app2.ActorID as ActorID2 \
-,  t.TitleID \
-,  t.ParentTitleID \
-from svumap.Appearances app1 \
-  inner join svumap.Titles t \
-    on t.TitleID = app1.TitleID \
-    and t.ParentTitleID <> \'tt0203259\' \
-  inner join svumap.Appearances app2 \
-    on app2.TitleID = app1.TitleID \
-    and app2.ActorID <> app1.ActorID;';
-    var cmd = {
-      sql: sql,
-      inserts: []
-    };
-    var process = function(dbRes) {
-      var actors = {};
-      for (var i = 0; i < dbRes.length; i++) {
-        if (typeof actors[dbRes[i].ActorID1] === 'undefined') {
-          actors[dbRes[i].ActorID1] = [];
-        }
-        actors[dbRes[i].ActorID1].push({
-          ActorID: dbRes[i].ActorID2,
-          TitleID: dbRes[i].TitleID
-        });
-      }
-      return {
-        actors: actors
-      };
-    };
-    return {
-      cmd: cmd,
-      process: process
-    };
-  };
+//   this.commonalities = function(baseTitleId) {
+//     var sql = '\
+// select \
+//   app1.ActorID as ActorID1 \
+// , app2.ActorID as ActorID2 \
+// ,  t.TitleID \
+// ,  t.ParentTitleID \
+// from svumap.Appearances app1 \
+//   inner join svumap.Titles t \
+//     on t.TitleID = app1.TitleID \
+//     and t.ParentTitleID <> ? \
+//   inner join svumap.Appearances app2 \
+//     on app2.TitleID = app1.TitleID \
+//     and app2.ActorID <> app1.ActorID;';
+//     var cmd = {
+//       sql: sql,
+//       inserts: [baseTitleId]
+//     };
+//     var process = function(dbRes) {
+//       var actors = {};
+//       for (var i = 0; i < dbRes.length; i++) {
+//         if (typeof actors[dbRes[i].ActorID1] === 'undefined') {
+//           actors[dbRes[i].ActorID1] = [];
+//         }
+//         actors[dbRes[i].ActorID1].push({
+//           ActorID: dbRes[i].ActorID2,
+//           TitleID: dbRes[i].TitleID
+//         });
+//       }
+//       return {
+//         actors: actors
+//       };
+//     };
+//     return {
+//       cmd: cmd,
+//       process: process
+//     };
+//   };
 
-  this.getCommonActors = function(ActorID,TitleID) {
+  this.getCommonActors = function(baseTitleId,ActorID,TitleID) {
     var sql = '\
 select distinct a2.ActorID \
 from Appearances a1 \
@@ -327,14 +327,14 @@ where a1.ActorID = ? \
 and not exists \
   (select 1 from Titles t \
   where t.TitleID = a1.TitleID \
-  and t.ParentTitleID = \'tt0203259\') \
+  and t.ParentTitleID = ?) \
 and exists \
   (select 1 from Appearances app \
     inner join Titles t \
       on t.TitleID = app.TitleID \
   where a2.ActorID = app.ActorID \
-    and t.ParentTitleID = \'tt0203259\') ';
-    var inserts = [ActorID];
+    and t.ParentTitleID = ?) ';
+    var inserts = [ActorID,baseTitleId,baseTitleId];
     if (typeof TitleID !== 'undefined') {
       sql += '\
 and exists \
@@ -408,7 +408,7 @@ order by Commonalities desc;';
     };
   };
 
-  this.getTitleActors = function(TitleID) {
+  this.getTitleActors = function(baseTitleId,TitleID) {
     var sql = '\
 select distinct ActorID \
 from Appearances a \
@@ -422,7 +422,7 @@ and exists \
   and exists \
     (Select 1 from Titles t \
     where t.TitleID = svu.TitleID \
-    and t.ParentTitleID = \'tt0203259\')) \
+    and t.ParentTitleID = ?)) \
 and exists \
   (select 1 from Appearances ap1 \
   where ap1.ActorID = a.ActorID \
@@ -436,10 +436,10 @@ and exists \
       and exists \
         (Select 1 from Titles t \
         where t.TitleID = svu.TitleID \
-        and t.ParentTitleID = \'tt0203259\'))));';
+        and t.ParentTitleID = ?))));';
     return {
       sql: sql,
-      inserts: [TitleID]
+      inserts: [baseTitleId,baseTitleId,TitleID]
     };
   };
 
