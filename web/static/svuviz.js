@@ -264,7 +264,7 @@ var changeSearch = function(actors) {
     }
   }
   else {
-    searchData = dataset.searchArray;
+    searchData = dataset.searchArray.slice(0);
   }
   searchActorSource.clear();
   searchActorSource.local = searchData;

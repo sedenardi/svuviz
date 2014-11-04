@@ -439,7 +439,7 @@ and exists \
         and t.ParentTitleID = ?))));';
     return {
       sql: sql,
-      inserts: [baseTitleId,baseTitleId,TitleID]
+      inserts: [TitleID,baseTitleId,baseTitleId]
     };
   };
 
