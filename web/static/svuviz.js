@@ -1,14 +1,13 @@
-baseUrl = 'svuviz/';
 BaseTitleID = 'tt0203259'; //svu
 
 $(document).ready(function(){
   $.ajax({
-    url: baseUrl + 'showInfoArray.json',
+    url: 'showInfoArray.json',
     data: { BaseTitleID: BaseTitleID },
     cache: true,
     success: function(data) {
       $.ajax({
-        url: baseUrl + 'filterTitlesArray.json',
+        url: 'filterTitlesArray.json',
         data: { BaseTitleID: BaseTitleID },
         cache: true,
         success: function(tData) {
@@ -132,7 +131,7 @@ var setupTitleSearch = function() {
     $('#titleSearch').attr('data-titleid', datum.TitleID);
     $('#titleSearch').attr('data-title', datum.Title);
     $.ajax({
-      url: baseUrl + 'getTitleActors.json',
+      url: 'getTitleActors.json',
       data: { BaseTitleID: BaseTitleID, TitleID: datum.TitleID },
       cache: true,
       success: function(response) {
@@ -447,7 +446,7 @@ var initGraph = function() {
           return;
         }
         $.ajax({
-          url: baseUrl + '/getActorInfo.json',
+          url: 'getActorInfo.json',
           type: 'GET',
           dataType: 'json',
           data: { ActorID: actorId },
@@ -557,7 +556,7 @@ var getCommonActors = function() {
     data.TitleID = $('#titleSearch').attr('data-titleid');
   }
   $.ajax({
-    url: baseUrl + '/getCommonActors.json',
+    url: 'getCommonActors.json',
     type: 'GET',
     dataType: 'json',
     data: data,
@@ -583,7 +582,7 @@ var showCommonModal = function() {
   var actorId2 = d3.select('#actor2').attr('data-actorid');
   var actorName2 = d3.select('#actor2').attr('data-actorname');
   $.ajax({
-    url: baseUrl + '/getCommonTitles.json',
+    url: 'getCommonTitles.json',
     type: 'GET',
     dataType: 'json',
     data: { ActorID1: actorId1, ActorID2: actorId2 },

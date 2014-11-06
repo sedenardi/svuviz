@@ -83,7 +83,8 @@ rect.appearance.common {
 .actorControl {
   display: inline;
   cursor: pointer;
-  color: #777;
+  color: #fff;  
+  background-color: #424242;
 }
 .actorControl.left {
     margin-right: -5px;
@@ -92,11 +93,11 @@ rect.appearance.common {
     margin-left: -5px;
   }
 .actorControl:hover {
-  color: #000;
-  background-color: #eee;
+  /*color: #000;*/
+  background-color: #777;
 }
 .actorControl:active {
-  background-color: #ddd;
+  background-color: #999;
 }
 .search {
   display: inline-block;
@@ -104,10 +105,31 @@ rect.appearance.common {
 }
 .form-control {
   border-radius: 0px;
+  border-color: #999
 }
 
 .twitter-typeahead {
   width: 100%;
+}
+.search .form-control {
+  color: #fff;
+  background-color: #424242;
+}
+.search .form-control::-webkit-input-placeholder {
+  color: #fff;
+  background-color: #424242;
+}
+.search .form-control::-moz-placeholder {
+  color: #fff;
+  background-color: #424242;
+}
+.search .form-control:-moz-placeholder {
+  color: #fff;
+  background-color: #424242;
+}
+.search .form-control:-ms-input-placeholder {
+  color: #fff;
+  background-color: #424242;
 }
 .search .tt-hint {
   width: 100% !important;
@@ -115,6 +137,22 @@ rect.appearance.common {
   width: 90%;
   padding: 8px 6px;
   height: 28px;
+}
+.search .tt-input::-webkit-input-placeholder {
+  color: #fff;
+  background-color: #424242;
+}
+.search .tt-input::-moz-placeholder {
+  color: #fff;
+  background-color: #424242;
+}
+.search .tt-input:-moz-placeholder {
+  color: #fff;
+  background-color: #424242;
+}
+.search .tt-input:-ms-input-placeholder {
+  color: #fff;
+  background-color: #424242;
 }
 
 .tt-dropdown-menu {
