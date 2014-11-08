@@ -339,7 +339,7 @@ var initGraph = function() {
 
       var xPosition = parseFloat(d3.select(this).attr("x")) + 25;
       if (xPosition > (width - 200)) xPosition -= (200 + 50);
-      var yPosition = height - episodeHeight - 200;
+      var yPosition = height - episodeHeight - 110;
       //Update the tooltip position and value
       var tooltip = d3.select("#episodeTooltip")
         .style("left", xPosition + "px")
@@ -391,17 +391,18 @@ var initGraph = function() {
 
         var xPosition = parseFloat(d3.select(this).attr("x")) + 30;
         if (xPosition > (width - 200)) xPosition -= (200 + 50);
-        var yPosition = height - 100;
+        //var yPosition = height - 100;
+        var yPosition = parseFloat(d3.select(this).attr("y")) + 50;
+        if (yPosition < 100) yPosition = 100;
         //Update the tooltip position and value
-        var tooltip = d3.select('#appearanceTooltip')
-          .style('left', xPosition + 'px')
-          .style('top', yPosition + 'px');
+        var tooltip = d3.select('#appearanceTooltip');
         tooltip.select('#name').text(d.ActorName);
         tooltip.select('#character').text(d.Character);
         var appearances = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]')[0].length;
         tooltip.select('#appearances').text(appearances);
         tooltip.select('#commonalities').text(d.Commonalities);
-        //Show the tooltip
+        tooltip.style('left', xPosition + 'px')
+          .style('top', yPosition + 'px');
         tooltip.classed('hidden', false);
       }
     })

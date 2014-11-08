@@ -130,19 +130,19 @@ rect.appearance.common {
   background-color: #424242;
 }
 .search .form-control::-webkit-input-placeholder {
-  color: #fff;
+  color: #ccc;
   background-color: #424242;
 }
 .search .form-control::-moz-placeholder {
-  color: #fff;
+  color: #ccc;
   background-color: #424242;
 }
 .search .form-control:-moz-placeholder {
-  color: #fff;
+  color: #ccc;
   background-color: #424242;
 }
 .search .form-control:-ms-input-placeholder {
-  color: #fff;
+  color: #ccc;
   background-color: #424242;
 }
 .search .tt-hint {
@@ -153,19 +153,19 @@ rect.appearance.common {
   height: 28px;
 }
 .search .tt-input::-webkit-input-placeholder {
-  color: #fff;
+  color: #ccc;
   background-color: #424242;
 }
 .search .tt-input::-moz-placeholder {
-  color: #fff;
+  color: #ccc;
   background-color: #424242;
 }
 .search .tt-input:-moz-placeholder {
-  color: #fff;
+  color: #ccc;
   background-color: #424242;
 }
 .search .tt-input:-ms-input-placeholder {
-  color: #fff;
+  color: #ccc;
   background-color: #424242;
 }
 
