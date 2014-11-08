@@ -292,12 +292,6 @@ var initGraph = function() {
       return d.Appearances.length;
     });
 
-  /*var colorScale = d3.scale.log()
-    .domain([1, d3.max(dataset.showTitles, function(d) {
-      return d.Appearances[0].Commonalities;
-    })])
-    .range([1, 255]);*/
-
   var getEpisodeColor = function(d) {
     var i = d.Season % palette.length;
     return palette[i]['500'];
@@ -306,17 +300,15 @@ var initGraph = function() {
   var getAppearanceColor = function(d) {
     var i = d.Season % palette.length;
     if (d.Commonalities < colorCutoffs[0]) {
-      return palette[i]['200']; //'#72d572';
+      return palette[i]['200']; 
     } else if (d.Commonalities < colorCutoffs[1]) {
-      return palette[i]['400']; //'#259b24';
+      return palette[i]['400']; 
     } else if (d.Commonalities < colorCutoffs[2]) {
-      return palette[i]['700']; //'#259b24';
+      return palette[i]['700']; 
     } else {
-      return palette[i]['900']; //'#0a7e07';
+      return palette[i]['900']; 
     }
   };
-  
-  var colors = d3.scale.category20();
 
   var svg = d3.select('#main')
     .append('svg')
@@ -329,7 +321,13 @@ var initGraph = function() {
     .enter()
     .append('g');
 
-  var episodes = epGroups.append('rect')
+  var episodes = epGroups
+    .append('a')
+    .attr('xlink:href', function(d) {
+      return 'http://www.imdb.com/title/' + d.TitleID + '/';
+    })
+    .attr('target','_blank')
+    .append('rect')
     .classed('episode', true)
     .attr('x', function(d, i) { return xScale(i); })
     .attr('y', (height - episodeHeight))
@@ -461,6 +459,11 @@ var initGraph = function() {
         $('#actorModal').modal('show');
       }
     });
+
+  d3.select('#commonControl')
+    .on('click', function() {
+      $('#commonModal').modal('show');
+    });
 };
 
 var scaleFactor = 3;
@@ -514,6 +517,7 @@ var setCommonalities = function() {
     d3.select('#actor2').classed('active');
   var neither = !d3.select('#actor1').classed('active') &&
     !d3.select('#actor2').classed('active');
+  $('#commonControl').hide();
   if (both) {
     d3.selectAll('.appearance')
       .filter(function(d,i) { return !d3.select(this).classed('clicked'); })
@@ -526,6 +530,7 @@ var setCommonalities = function() {
         }
       });
     showCommonModal();
+    $('#commonControl').show();
   } else if (neither) {
     var appearances = d3.selectAll('.appearance')
       .filter(function(d,i) { return !d3.select(this).classed('clicked'); });

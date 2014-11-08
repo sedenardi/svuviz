@@ -101,11 +101,25 @@ rect.appearance.common {
 }
 .search {
   display: inline-block;
-  width: 73%;
+  width: 82.4%;
 }
 .form-control {
   border-radius: 0px;
   border-color: #999
+}
+#commonContainer {
+  color: white;
+  width: 20px;
+  text-align: center;
+  margin-right: 2px;
+  cursor: pointer;
+}
+#commonContainer:hover {
+  font-size: 1.33333333em;
+  line-height: .75em;
+}
+#commonControl {
+  display: none;
 }
 
 .twitter-typeahead {
