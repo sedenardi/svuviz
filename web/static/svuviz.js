@@ -399,7 +399,9 @@ var initGraph = function() {
         tooltip.select('#name').text(d.ActorName);
         tooltip.select('#character').text(d.Character);
         var appearances = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]')[0].length;
-        tooltip.select('#appearances').text(appearances);
+        var appearancePercentage = ((appearances/dataset.showTitles.length)*100).toFixed(2);
+        var appText = appearances + '/' + dataset.showTitles.length + ' (' + appearancePercentage + '%)';
+        tooltip.select('#appearances').text(appText);
         tooltip.select('#commonalities').text(d.Commonalities);
         tooltip.style('left', xPosition + 'px')
           .style('top', yPosition + 'px');
