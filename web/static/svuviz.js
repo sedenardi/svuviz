@@ -43,6 +43,7 @@ var prepareDataset = function(obj, tData) {
       Title: obj[i][3],
       Synopsis: obj[i][4],
       AirDate: obj[i][5],
+      seq: i,
       Appearances: []
     });
     for (var j = 0; j < obj[i][6].length; j++) {
@@ -53,6 +54,7 @@ var prepareDataset = function(obj, tData) {
         Character: obj[i][6][j][3],
         CharacterID: obj[i][6][j][4],
         x: i,
+        seq: i + j,
         Season: showTitles[i].Season
       });
       var actorId = showTitles[i].Appearances[j].ActorID;
@@ -330,7 +332,8 @@ var initGraph = function() {
     .append('rect')
     .classed('episode', true)
     .attr('x', function(d, i) { return xScale(i); })
-    .attr('y', (height - episodeHeight))
+    .attr('y', 0 - episodeHeight)
+    .attr('data-ty', (height - episodeHeight))
     .attr('height', episodeHeight)
     .attr('width', xScale.rangeBand())
     .style('fill', getEpisodeColor)
@@ -369,7 +372,8 @@ var initGraph = function() {
     .append('rect')
     .classed('appearance', true)
     .attr('x', function(d) { return xScale(d.x); })
-    .attr('y', function(d,i) { return height - yScale(i + 1); })
+    .attr('y', function(d, i) { return 0 - yScale(i + 1); })
+    .attr('data-ty', function(d, i) { return height - yScale(i + 1); })
     .attr('height', function(d) { return yHeight; })
     .attr('width', xScale.rangeBand())
     .style('fill', getAppearanceColor)
@@ -428,6 +432,15 @@ var initGraph = function() {
         appearanceClicked(d);
       }
     });
+
+  var seqDelay = Math.ceil(3000/dataset.showTitles.length);
+  d3.selectAll('rect')
+    .transition()
+    .delay(function(d,i) {
+      return d.seq * seqDelay;
+    })
+    .duration(1000)
+    .attr('y', function() { return d3.select(this).attr('data-ty'); });
 
   d3.selectAll('.actorClose')
     .on('click', function(d) {
