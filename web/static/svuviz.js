@@ -2,21 +2,14 @@ BaseTitleID = 'tt0203259'; //svu
 
 $(document).ready(function(){
   $.ajax({
-    url: 'showInfoArray.json',
+    url: 'allInfo.json',
     data: { BaseTitleID: BaseTitleID },
     cache: true,
     success: function(data) {
-      $.ajax({
-        url: 'filterTitlesArray.json',
-        data: { BaseTitleID: BaseTitleID },
-        cache: true,
-        success: function(tData) {
-          prepareDataset(data, tData);
-          initGraph();
-          setupTitleSearch();
-          setupActorSearch();
-        }
-      });
+      prepareDataset(data);
+      initGraph();
+      setupTitleSearch();
+      setupActorSearch();
     }
   });
 
@@ -32,27 +25,27 @@ $(document).ready(function(){
   registerHelpers();
 });
 
-var prepareDataset = function(obj, tData) {
+var prepareDataset = function(data) {
   var showTitles = [],
       searchObj = {};
-  for (var i = 0; i < obj.length; i++) {
+  for (var i = 0; i < data.showInfo.length; i++) {
     showTitles.push({
-      TitleID: obj[i][0],
-      Season: obj[i][1],
-      Number: obj[i][2],
-      Title: obj[i][3],
-      Synopsis: obj[i][4],
-      AirDate: obj[i][5],
+      TitleID: data.showInfo[i][0],
+      Season: data.showInfo[i][1],
+      Number: data.showInfo[i][2],
+      Title: data.showInfo[i][3],
+      Synopsis: data.showInfo[i][4],
+      AirDate: data.showInfo[i][5],
       seq: i,
       Appearances: []
     });
-    for (var j = 0; j < obj[i][6].length; j++) {
+    for (var j = 0; j < data.showInfo[i][6].length; j++) {
       showTitles[i].Appearances.push({
-        ActorID: obj[i][6][j][0],
-        ActorName: obj[i][6][j][1],
-        Commonalities: obj[i][6][j][2],
-        Character: obj[i][6][j][3],
-        CharacterID: obj[i][6][j][4],
+        ActorID: data.showInfo[i][6][j][0],
+        ActorName: data.showInfo[i][6][j][1],
+        Commonalities: data.showInfo[i][6][j][2],
+        Character: data.showInfo[i][6][j][3],
+        CharacterID: data.showInfo[i][6][j][4],
         x: i,
         seq: i + j,
         Season: showTitles[i].Season
@@ -88,11 +81,11 @@ var prepareDataset = function(obj, tData) {
     searchObj[actorId].Characters = charStr;
   }
   var searchTitles = [];
-  for (var i = 0; i < tData.length; i++) {
+  for (var i = 0; i < data.filterTitles.length; i++) {
     searchTitles.push({
-      TitleID: tData[i][0],
-      Title: tData[i][1],
-      TV: tData[i][2]
+      TitleID: data.filterTitles[i][0],
+      Title: data.filterTitles[i][1],
+      TV: data.filterTitles[i][2]
     });
   }
   dataset = {
@@ -102,7 +95,7 @@ var prepareDataset = function(obj, tData) {
     searchArray: searchArray
   };
 
-  colorCutoffs = [32,87,183];
+  colorCutoffs = data.colorCutoffs;
 };
 
 var searchTitleActors = [];

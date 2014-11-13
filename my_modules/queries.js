@@ -220,7 +220,7 @@ where exists \
     and exists \
       (Select 1 from Titles t1 \
       where t1.TitleID = acp1.TitleID \
-      and t1.ParentTitleID = baseTitleId)) \
+      and t1.ParentTitleID = ?)) \
   and ap1.TitleID = t.TitleID \
     and exists \
     (Select 1 from Appearances ap2 \

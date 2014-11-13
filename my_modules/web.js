@@ -1,5 +1,6 @@
 var events = require('events'),
   express = require('express'),
+  compression = require('compression'),
   hbars = require('./hbars.js'),
   util = require('util'),
   DB = require('./db.js'),
@@ -20,6 +21,9 @@ var Web = function(config) {
   app.set('views', rootDir + '/web/views');
   app.set('view engine', 'handlebars');
   app.use(express.static(rootDir + config.web.folders.static));
+  app.use(compression({
+    threshold: 512
+  }));
 
   app.get('/showInfo.json', function (req, res) {
     if (typeof req.query.BaseTitleID === 'undefined') {
@@ -76,6 +80,30 @@ var Web = function(config) {
     var filterTitles = queries.filterTitlesArray(req.query.BaseTitleID);
     db.query(filterTitles.cmd, function(dbRes) {
       res.json(filterTitles.process(dbRes));
+    });
+  });
+
+  app.get('/allInfo.json', function (req, res) {
+    if (typeof req.query.BaseTitleID === 'undefined') {
+      res.status(400).json({ error: 'Must specify BaseTitleID.'});
+      return;
+    }
+    var showInfoQuery = queries.showInfoArray(req.query.BaseTitleID);
+    db.query(showInfoQuery.cmd, function(dbResA) {
+      var showInfo = showInfoQuery.process(dbResA[3]).tArray;
+      var filterTitlesQuery = queries.filterTitlesArray(req.query.BaseTitleID);
+      db.query(filterTitlesQuery.cmd, function(dbResB) {
+        var filterTitles = filterTitlesQuery.process(dbResB);
+        var colorCutoffsQuery = queries.getColorCutoffs(req.query.BaseTitleID);
+        db.query(colorCutoffsQuery, function(dbResC) {
+          var colorCutoffs = [dbResC[8][0].first, dbResC[8][0].second, dbResC[8][0].third];
+          res.json({
+            showInfo: showInfo,
+            filterTitles: filterTitles,
+            colorCutoffs: colorCutoffs
+          });
+        });
+      });
     });
   });
 
