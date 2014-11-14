@@ -55,6 +55,7 @@
             </div>
           </form>
           <ul class="nav navbar-nav navbar-right">
+            <li><a id="helpLink" href="#"><i class="fa fa-question-circle"></i> Help</a></li>
             <li><a href="https://github.com/sedenardi/svuviz" target="_blank"><i class="fa fa-github"></i> GitHub</a></li>
             <li><a href="http://sandersdenardi.com" target="_blank"><i class="fa fa-external-link"></i> About</a></li>
           </ul>
@@ -147,7 +148,7 @@
       </div>
     </div>
 
-    <div class="modal" id="introModal" tabidex="-1" role="dialog" aria-hidden="true">
+    <div class="modal fade" id="introModal" tabidex="-1" role="dialog" aria-hidden="true">
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header">
@@ -155,7 +156,7 @@
             <h4>How to use SVUViz</h4>
           </div>
           <div class="modal-body">
-            <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+            <div id="introCarousel" class="carousel slide" data-ride="carousel">
             <!-- Indicators -->
             <ol class="carousel-indicators">
               <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
@@ -192,7 +193,9 @@
           </div>
           </div>
           <div class="modal-footer">
-            Close
+            <label>
+              <input id="introModalHide" type="checkbox"> Don't Show This Again
+            </label>
           </div>
         </div>
       </div>

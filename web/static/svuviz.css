@@ -260,3 +260,6 @@ rect.appearance.common {
 .progress {
   margin-bottom: 0px;
 }
+input[type="checkbox"] {
+  vertical-align: top;
+}

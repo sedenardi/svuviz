@@ -1,12 +1,6 @@
-//BaseTitleID = 'tt0203259'; //svu
-//BaseTitleID = 'tt0108778'; // friends
-
 $(document).ready(function(){
-  $('#loadingModal').modal({ 
-    backdrop: 'static',
-    keyboard: false,
-    show: true
-  });
+  initControls();
+
   $.ajax({
     url: BaseTitleID + '.json',
     cache: true,
@@ -29,6 +23,34 @@ $(document).ready(function(){
 
   registerHelpers();
 });
+
+var initControls = function() {
+  $('#introCarousel').carousel({
+    interval: false
+  });
+
+  var c = $.cookie('showIntro');
+  if (typeof c === 'undefined' || c === 'true') {
+    $('#introModal').modal();
+  } else {
+    $('#introModalHide').prop('checked', true);
+  }
+
+  $('#introModalHide').change(function(){
+    $.cookie('showIntro', !this.checked, { expires: 100 });
+  });
+
+  $('#helpLink').click(function(e) {
+    $('#introModal').modal('show');
+    return false;
+  });
+
+  $('#loadingModal').modal({ 
+    backdrop: 'static',
+    keyboard: false,
+    show: true
+  });
+};
 
 var prepareDataset = function(data) {
   var showTitles = [],
@@ -380,7 +402,6 @@ var initGraph = function() {
     .attr('width', xScale.rangeBand())
     .style('fill', getAppearanceColor)
     .attr('data-actorid', function(d) { return d.ActorID; })
-    .classed('clickable', true)
     .on('mouseenter', function(d) {
       if (d3.select(this).classed('clickable')) {
         var actors = d3.selectAll('rect[data-actorid="' + d.ActorID + '"]');
@@ -434,6 +455,20 @@ var initGraph = function() {
       }
     });
 
+  $('#loadingModal').modal('hide');
+  var seqDelay = Math.ceil(3000/dataset.showTitles.length);
+  d3.selectAll('rect')
+    .transition()
+    .delay(function(d,i) {
+      return d.seq * seqDelay;
+    })
+    .duration(500)
+    .attr('y', function() { return d3.select(this).attr('data-ty'); });
+  
+  setTimeout(function() {
+    rects.classed('clickable', true);
+  }, 3500);
+
   d3.selectAll('.actorClose')
     .on('click', function(d) {
       var parent = d3.select(this)[0][0].parentNode;
@@ -473,20 +508,6 @@ var initGraph = function() {
     .on('click', function() {
       $('#commonModal').modal('show');
     });
-
-  finishLoading();
-};
-
-var finishLoading = function() {
-  $('#loadingModal').modal('hide');
-  var seqDelay = Math.ceil(3000/dataset.showTitles.length);
-  d3.selectAll('rect')
-    .transition()
-    .delay(function(d,i) {
-      return d.seq * seqDelay;
-    })
-    .duration(1000)
-    .attr('y', function() { return d3.select(this).attr('data-ty'); });
 };
 
 var scaleFactor = 3;
