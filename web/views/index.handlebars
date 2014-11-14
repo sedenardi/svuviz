@@ -9,8 +9,12 @@
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.4/typeahead.bundle.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0/handlebars.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-    <script src="svuviz.js"></script>
     <script src="palette.js"></script>
+    <script src="templates.js"></script>
+    <script>
+      BaseTitleID = '{{activeBaseTitleId}}';
+    </script>
+    <script src="svuviz.js"></script>
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
     <link href="svuviz.css" rel="stylesheet">
@@ -25,19 +29,25 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <span class="navbar-brand">SVUViz</span>
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-          <!-- <ul class="nav navbar-nav">
+          <ul class="nav navbar-nav">
             <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <span class="caret"></span></a>
+              <a href="#" class="dropdown-toggle" id="baseTitleDD" data-toggle="dropdown">
+                <span class="baseTitle">{{activeDisplayName}}</span>
+                <span class="caret"></span>
+              </a>
               <ul class="dropdown-menu" role="menu">
-                <li><a href="#">Law & Order: SVU</a></li>
-                <li><a href="#">Show 2</a></li>
-                <li><a href="#">Show 3</a></li>
+              {{#each baseTitles}}
+              {{#if this.active}}
+                <li class="active"><a href="#">{{this.DisplayName}}</a></li>
+              {{else}}
+                <li><a href="?BaseTitleID={{this.BaseTitleID}}">{{this.DisplayName}}</a></li>
+              {{/if}}
+              {{/each}}
               </ul>
             </li>
-          </ul> -->
+          </ul>
           <form class="navbar-form navbar-left" role="search">
             <div class="form-group">
               <input type="text" class="form-control" id="titleSearch" data-titleid data-title placeholder="Filter actors by title...">
@@ -135,80 +145,6 @@
         </div>
       </div>
     </div>
-
-    <script id="commonModal-template" type="text/x-handlebars-template">
-      <div class="row commonHeader">
-        <div class="col-xs-4">
-          <h4>
-          {{{actorLink actorId1 actorName1}}}
-          </h4>
-        </div>
-        <div class="col-xs-4">
-          <h4>
-            Title
-          </h4>
-        </div>
-        <div class="col-xs-4">
-          <h4>
-          {{{actorLink actorId2 actorName2}}}
-          </h4>
-        </div>
-      </div>
-      {{#if processed.tv.length}}
-      <h4>TV Shows</h4>
-      {{#each processed.tv}}
-        {{>commonRow this}}
-      {{/each}}
-      {{/if}}
-      {{#if processed.movies.length}}
-      <h4>Movies</h4>
-      {{#each processed.movies}}
-        {{>commonRow this}}
-      {{/each}}
-      {{/if}}
-    </script>
-
-    <script id="commonRow-partial" type="text/x-handlebars-template">
-      <div class="row alternateRow">
-        <div class="col-xs-4">
-        {{{characterLink CharacterID1 Character1}}}
-        </div>
-        <div class="col-xs-4">
-        {{{titleLink TitleID Title}}}
-        {{episodes this}}
-        </div>
-        <div class="col-xs-4">
-        {{{characterLink CharacterID2 Character2}}}
-        </div>
-      </div>
-    </script>
-
-    <script id="actorModal-template" type="text/x-handlebars-template">
-      {{#if processed.tv.length}}
-      <h4>TV Shows</h4>
-      {{#each processed.tv}}
-        {{>actorRow this}}
-      {{/each}}
-      {{/if}}
-      {{#if processed.movies.length}}
-      <h4>Movies</h4>
-      {{#each processed.movies}}
-        {{>actorRow this}}
-      {{/each}}
-      {{/if}}
-    </script>
-
-    <script id="actorRow-partial" type="text/x-handlebars-template">
-      <div class="row alternateRow">
-        <div class="col-xs-6">
-        {{{characterLink CharacterID Character}}}
-        </div>
-        <div class="col-xs-6">
-        {{{titleLink TitleID Title}}}
-        {{episodes this}}
-        </div>
-      </div>
-    </script>
 
   </body>
 </html>

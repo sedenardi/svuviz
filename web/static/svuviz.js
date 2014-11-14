@@ -1,4 +1,4 @@
-BaseTitleID = 'tt0203259'; //svu
+//BaseTitleID = 'tt0203259'; //svu
 //BaseTitleID = 'tt0108778'; // friends
 
 $(document).ready(function(){
@@ -8,8 +8,7 @@ $(document).ready(function(){
     show: true
   });
   $.ajax({
-    url: 'allInfo.json',
-    data: { BaseTitleID: BaseTitleID },
+    url: BaseTitleID + '.json',
     cache: true,
     success: function(data) {
       prepareDataset(data);

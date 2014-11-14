@@ -501,6 +501,13 @@ and exists \
     };
   };
 
+  this.baseTitles = function() {
+    return {
+      sql: 'select * from BaseTitles order by Sort asc;',
+      inserts: []
+    };
+  };
+
 };
 
 module.exports = new queries();

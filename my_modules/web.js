@@ -25,6 +25,34 @@ var Web = function(config) {
     threshold: 512
   }));
 
+  app.get('/', function (req, res) {
+    var activeBaseTitleId = 'tt0203259';
+    if (typeof req.query.BaseTitleID !== 'undefined') {
+      activeBaseTitleId = req.query.BaseTitleID;
+    }
+    db.query(queries.baseTitles(), function(dbRes){
+      var activeDisplayName = '';
+      for (var i = 0; i < dbRes.length; i++) {
+        if (dbRes[i].BaseTitleID === activeBaseTitleId) {
+          activeDisplayName = dbRes[i].DisplayName;
+          dbRes[i].active = true;
+        } else {
+          dbRes[i].active = false;
+        }
+      }
+      if (activeDisplayName === '') {
+        res.status(400).json({ error: 'Bad BaseTitleID specified.'});
+        return;
+      }
+      res.render('index', {
+        layout: false,
+        baseTitles: dbRes,
+        activeBaseTitleId: activeBaseTitleId,
+        activeDisplayName: activeDisplayName
+      });
+    });    
+  });
+
   app.get('/showInfo.json', function (req, res) {
     if (typeof req.query.BaseTitleID === 'undefined') {
       res.status(400).json({ error: 'Must specify BaseTitleID.'});
