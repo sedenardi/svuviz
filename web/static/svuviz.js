@@ -1,6 +1,11 @@
 BaseTitleID = 'tt0203259'; //svu
 
 $(document).ready(function(){
+  $('#loadingModal').modal({ 
+    backdrop: 'static',
+    keyboard: false,
+    show: true
+  });
   $.ajax({
     url: 'allInfo.json',
     data: { BaseTitleID: BaseTitleID },
@@ -125,6 +130,7 @@ var setupTitleSearch = function() {
   }).bind('typeahead:selected', function (obj, datum){
     $('#titleSearch').attr('data-titleid', datum.TitleID);
     $('#titleSearch').attr('data-title', datum.Title);
+    $('#loadingModal').modal('show');
     $.ajax({
       url: 'getTitleActors.json',
       data: { BaseTitleID: BaseTitleID, TitleID: datum.TitleID },
@@ -142,6 +148,7 @@ var setupTitleSearch = function() {
             }
           });
         clearBothActors();
+        $('#loadingModal').modal('hide');
       }
     });
   }).change(function() {
@@ -426,15 +433,6 @@ var initGraph = function() {
       }
     });
 
-  var seqDelay = Math.ceil(3000/dataset.showTitles.length);
-  d3.selectAll('rect')
-    .transition()
-    .delay(function(d,i) {
-      return d.seq * seqDelay;
-    })
-    .duration(1000)
-    .attr('y', function() { return d3.select(this).attr('data-ty'); });
-
   d3.selectAll('.actorClose')
     .on('click', function(d) {
       var parent = d3.select(this)[0][0].parentNode;
@@ -452,6 +450,7 @@ var initGraph = function() {
         if (!actorName.length) {
           return;
         }
+        d3.select('#actorModalBody').html('Loading...');
         $.ajax({
           url: 'getActorInfo.json',
           type: 'GET',
@@ -473,6 +472,20 @@ var initGraph = function() {
     .on('click', function() {
       $('#commonModal').modal('show');
     });
+
+  finishLoading();
+};
+
+var finishLoading = function() {
+  $('#loadingModal').modal('hide');
+  var seqDelay = Math.ceil(3000/dataset.showTitles.length);
+  d3.selectAll('rect')
+    .transition()
+    .delay(function(d,i) {
+      return d.seq * seqDelay;
+    })
+    .duration(1000)
+    .attr('y', function() { return d3.select(this).attr('data-ty'); });
 };
 
 var scaleFactor = 3;
@@ -595,6 +608,7 @@ var showCommonModal = function() {
   var actorName1 = d3.select('#actor1').attr('data-actorname');
   var actorId2 = d3.select('#actor2').attr('data-actorid');
   var actorName2 = d3.select('#actor2').attr('data-actorname');
+  d3.select('#commonModalBody').html('Loading...');
   $.ajax({
     url: 'getCommonTitles.json',
     type: 'GET',
