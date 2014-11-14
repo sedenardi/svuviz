@@ -1,4 +1,5 @@
 BaseTitleID = 'tt0203259'; //svu
+//BaseTitleID = 'tt0108778'; // friends
 
 $(document).ready(function(){
   $('#loadingModal').modal({ 
@@ -645,7 +646,7 @@ var getCommonModalBody = function(param) {
 var processModalResults = function(data) {
   var svu = [], movies = [], tv = [];
   for (var i = 0; i < data.length; i++) {
-    if (data[i].TitleID === 'tt0203259') {
+    if (data[i].TitleID === BaseTitleID) {
       svu.push(data[i]);
     } else if (data[i].TV) {
       tv.push(data[i]);
