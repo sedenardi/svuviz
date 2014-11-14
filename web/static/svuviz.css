@@ -87,21 +87,22 @@ rect.appearance.common {
   margin-right:-4px;
 }
 .actor .form-control {
-  padding: 5px 6px;
+  padding: 3px 6px;
   height: 28px;
 }
 
 .actorControl {
-  display: inline;
+  display: table-cell;
+  width: 1%;
   cursor: pointer;
   color: #fff;  
   background-color: #424242;
 }
 .actorControl.left {
-    margin-right: -5px;
+    border-right-width: 0;
   }
 .actorControl.right {
-    margin-left: -5px;
+    border-left-width: 0;
   }
 .actorControl:hover {
   /*color: #000;*/
@@ -111,8 +112,8 @@ rect.appearance.common {
   background-color: #999;
 }
 .search {
-  display: inline-block;
-  width: 82.4%;
+  display: table-cell;
+  width: 100%;
 }
 .form-control {
   border-radius: 0px;
