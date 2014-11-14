@@ -1,6 +1,16 @@
 body {
   padding: 50px 8px 8px;
   background-color: #424242;
+  position: relative;
+}
+#top {
+  position: absolute;
+  top: 50px;
+  left: 0;
+  width: 100%;
+  display: table;
+  clear: both;
+  margin: 8px 0;
 }
 #baseTitleDD {
   font-size: 18px;
@@ -69,12 +79,6 @@ rect.appearance.common {
 }
 #airdate {
   text-align: center; 
-}
-#top {
-  width: 100%;
-  display: table;
-  clear: both;
-  margin: 8px 0;
 }
 .row-centered {
   display: block;

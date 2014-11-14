@@ -31,10 +31,12 @@ var Web = function(config) {
       activeBaseTitleId = req.query.BaseTitleID;
     }
     db.query(queries.baseTitles(), function(dbRes){
-      var activeDisplayName = '';
+      var activeDisplayName = '',
+          activeTitleName = '';
       for (var i = 0; i < dbRes.length; i++) {
         if (dbRes[i].BaseTitleID === activeBaseTitleId) {
           activeDisplayName = dbRes[i].DisplayName;
+          activeTitleName = dbRes[i].TitleName;
           dbRes[i].active = true;
         } else {
           dbRes[i].active = false;
@@ -48,7 +50,8 @@ var Web = function(config) {
         layout: false,
         baseTitles: dbRes,
         activeBaseTitleId: activeBaseTitleId,
-        activeDisplayName: activeDisplayName
+        activeDisplayName: activeDisplayName,
+        activeTitleName: activeTitleName
       });
     });    
   });

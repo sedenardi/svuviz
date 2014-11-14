@@ -503,7 +503,12 @@ and exists \
 
   this.baseTitles = function() {
     return {
-      sql: 'select * from BaseTitles order by Sort asc;',
+      sql: '\
+select bt.*, t.Title as TitleName \
+from BaseTitles bt \
+  inner join Titles t \
+    on t.TitleID = bt.BaseTitleID \
+order by Sort asc;',
       inserts: []
     };
   };

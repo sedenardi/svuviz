@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>SVU VIZ</title>
+    <title>SVUViz - {{activeTitleName}}</title>
     <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"> -->
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
@@ -20,7 +20,7 @@
     <link href="svuviz.css" rel="stylesheet">
   </head>
   <body>
-    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <nav class="navbar navbar-default navbar-fixed-top navbar-inverse" role="navigation">
       <div class="container-fluid">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
@@ -61,6 +61,7 @@
       </div>
     </nav>
 
+    <div id="main"></div>
     <div id="top">
       <div class="row-centered">
         <div class="col-xs-3 col-centered">
@@ -88,7 +89,6 @@
         </div>
       </div>
     </div>
-    <div id="main"></div>
 
     <div id="appearanceTooltip" class="hoverTooltip hidden">
       <p><strong>Actor: <span id="name"></span></strong></p>
