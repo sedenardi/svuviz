@@ -397,7 +397,7 @@ var initGraph = function() {
 
         var xPosition = parseFloat(d3.select(this).attr("x")) + 30;
         if (xPosition > (width - 200)) xPosition -= (200 + 50);
-        var yPosition = parseFloat(d3.select(this).attr("y")) + 50;
+        var yPosition = parseFloat(d3.select(this).attr("y")) + 50 - heightOffset;
         if (yPosition < 100) yPosition = 100;
         //Update the tooltip position and value
         var tooltip = d3.select('#appearanceTooltip');
@@ -633,13 +633,13 @@ var showCommonModal = function() {
 
 var getActorModalBody = function(param) {
   param.processed = processModalResults(param.data);
-  var actorModal = Handlebars.compile($('#actorModal-template').html());
+  var actorModal = Handlebars.templates['actorModal-template'];
   return actorModal(param);
 };
 
 var getCommonModalBody = function(param) {
   param.processed = processModalResults(param.data);
-  var commonModal = Handlebars.compile($('#commonModal-template').html());
+  var commonModal = Handlebars.templates['commonModal-template'];
   return commonModal(param);
 };
 
@@ -696,8 +696,9 @@ var registerHelpers = function() {
     }
   });
 
-  Handlebars.registerPartial('commonRow', $('#commonRow-partial').html());
-  Handlebars.registerPartial('actorRow', $('#actorRow-partial').html());
+  Handlebars.templates['commonRow-partial'];
+  Handlebars.templates['actorRow-partial'];
+  Handlebars.partials = Handlebars.templates;
 };
 
 var getActorLink = function(id, name) {
