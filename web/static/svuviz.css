@@ -52,7 +52,7 @@ rect.appearance.common {
   height: auto;
   padding: 5px 7px;
   background-color: rgba(0,0,0,0.7);
-  color: white;
+  color: #ddd;
   border-color: #999;
   border-style: solid;
   border-width: 1px;
@@ -235,7 +235,7 @@ rect.appearance.common {
   font-size: 12px;
 }
 .alternateRow:nth-child(odd) {
-  background-color: #CCC;
+  background-color: #222;
 }
 
 .vertical-alignment-helper {
@@ -262,4 +262,15 @@ rect.appearance.common {
 }
 input[type="checkbox"] {
   vertical-align: top;
+}
+
+.modal-content {
+  background-color: rgba(0,0,0,0.8);
+  color: #ddd;
+  border-color: #555;
+  border-style: solid;
+}
+.close {
+  color: #ddd !important;
+  opacity: .6 !important;
 }
