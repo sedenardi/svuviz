@@ -16,13 +16,6 @@ var ActorCreditsGrabber = function(config) {
   var moreLinksIndex = 0;
   var total = 0, done = 0;
 
-  var queueUpAllActors = function() {
-    return {
-      sql: 'Insert into ProcessActors(ActorID) select ActorID from Actors a where not exists (select 1 from ProcessActors pa where pa.ActorID = a.ActorID);',
-      inserts: []
-    };
-  };
-
   var getUnprocessed = function() {
     return {
       sql: 'select * from ProcessActors limit 30;',
@@ -37,20 +30,8 @@ var ActorCreditsGrabber = function(config) {
     };
   };
   
-  this.start = function(queueAll) {
-    db.connect('ActorCreditsGrabber', function(){
-      if (typeof queueAll !== 'undefined' && queueAll) {
-        logger.log({
-          caller: 'ActorCreditsGrabber',
-          message: 'Queueing all actors'
-        });
-        db.query(queueUpAllActors(), function() {
-          checkUnprocessed();
-        });
-      } else {
-        checkUnprocessed();
-      }
-    });
+  this.start = function() {
+    db.connect('ActorCreditsGrabber', checkUnprocessed);
   };
   
   var checkUnprocessed = function() {
@@ -82,33 +63,13 @@ var ActorCreditsGrabber = function(config) {
     dl.on('data', function(obj) {
       parseCreditsPage(obj);
     });
-    
-    dl.on('error', function(logObj) {
-      logger.log(logObj);
-      if (logObj.params.attempt < 10) {
-        var timeout = logObj.params.attempt * 15000;
-        setTimeout(function permitRetry(){
-          dl.download(logObj.params.url, logObj.params.attempt + 1);
-        },timeout);
-      } else {
-        setTimeout(function waitLonger() {
-          dl.download(logObj.params.url);
-        },3600000);
-      }
-    });
 
     dl.download(urlObj);
   };
 
   var parseCreditsPage = function(obj) {
     var p = new Parser();
-    p.on('parsed', function(parsedObj) {
-      // logger.log({
-      //   caller: 'Parser',
-      //   message: 'parsed',
-      //   params: parsedObj.url
-      // });
-      
+    p.on('parsed', function(parsedObj) {      
       if (parsedObj.credits.length) {
         db.query(parsedObj.logTitlesCmd(),function() {
           db.query(parsedObj.logAppearancesCmd(),function() {
@@ -140,20 +101,6 @@ var ActorCreditsGrabber = function(config) {
     dl.on('data', function(obj) {
       parseMoreLink(moreLinksObj, obj);
     });
-    
-    dl.on('error', function(logObj) {
-      logger.log(logObj);
-      if (logObj.params.attempt < 10) {
-        var timeout = logObj.params.attempt * 15000;
-        setTimeout(function permitRetry(){
-          dl.download(logObj.params.url, logObj.params.attempt + 1);
-        },timeout);
-      } else {
-        setTimeout(function waitLonger() {
-          dl.download(logObj.params.url);
-        },3600000);
-      }
-    });
 
     dl.download(urlObj);
   };
@@ -161,12 +108,6 @@ var ActorCreditsGrabber = function(config) {
   var parseMoreLink = function(moreLinksObj, obj) {
     var p = new Parser();
     p.on('parsed', function(parsedObj) {
-      // logger.log({
-      //   caller: 'Parser',
-      //   message: 'parsed',
-      //   params: parsedObj.url
-      // });
-
       db.query(parsedObj.logTitlesCmd(),function() {
         db.query(parsedObj.logAppearancesCmd(),function() {
           moreLinksObj.moreLinksDone++;

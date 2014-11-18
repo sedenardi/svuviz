@@ -49,20 +49,6 @@ var BaseShowScraper = function(config, baseId, firstSeason) {
     dl.on('data', function(obj) {
       parseSeason(obj);
     });
-    
-    dl.on('error', function(logObj) {
-      logger.log(logObj);
-      if (logObj.params.attempt < 10) {
-        var timeout = logObj.params.attempt * 15000;
-        setTimeout(function permitRetry(){
-          dl.download(logObj.params.url, logObj.params.attempt + 1);
-        },timeout);
-      } else {
-        setTimeout(function waitLonger() {
-          dl.download(logObj.params.url);
-        },3600000);
-      }
-    });
 
     dl.download(seasonUrl);
   };

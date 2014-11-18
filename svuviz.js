@@ -9,6 +9,22 @@ var svu = 'tt0203259';
 var friends = 'tt0108778';
 var seinfeld = 'tt0098904';
 
+var queueUpAllActors = function() {
+  return {
+    sql: 'Insert into ProcessActors(ActorID) select ActorID from Actors a where not exists (select 1 from ProcessActors pa where pa.ActorID = a.ActorID);',
+    inserts: []
+  };
+};
+
+var queueUpAllActors = function(queueAll) {
+  db.connect('queueUpAllActors', function(){
+    db.query({
+      sql: 'Insert into ProcessActors(ActorID) select ActorID from Actors a where not exists (select 1 from ProcessActors pa where pa.ActorID = a.ActorID);',
+      inserts: []
+    }, function() { });
+  });
+};
+
 var base = new BaseShowScraper(config, seinfeld);
 var cast = new EpisodeActorGrabber(config);
 var credits = new ActorCreditsGrabber(config);
@@ -23,7 +39,7 @@ base.on('done',function(baseId) {
 
 base.start();
 cast.start();
-credits.start(false);
+credits.start();
 
 var web = new Web(config);
 web.startServer();

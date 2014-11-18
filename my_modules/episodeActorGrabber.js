@@ -61,33 +61,13 @@ var EpisodeActorGrabber = function(config) {
     dl.on('data', function(obj) {
       parseCreditsPage(obj);
     });
-    
-    dl.on('error', function(logObj) {
-      logger.log(logObj);
-      if (logObj.params.attempt < 10) {
-        var timeout = logObj.params.attempt * 15000;
-        setTimeout(function permitRetry(){
-          dl.download(logObj.params.url, logObj.params.attempt + 1);
-        },timeout);
-      } else {
-        setTimeout(function waitLonger() {
-          dl.download(logObj.params.url);
-        },3600000);
-      }
-    });
 
     dl.download(urlObj);
   };
 
   var parseCreditsPage = function(obj) {
     var p = new Parser();
-    p.on('parsed', function(parsedObj) {
-      // logger.log({
-      //   caller: 'Parser',
-      //   message: 'parsed',
-      //   params: parsedObj.url
-      // });
-      
+    p.on('parsed', function(parsedObj) {      
       db.query(parsedObj.logActorsCmd(),function() {
         db.query(parsedObj.logCastCmd(),function() {
           db.query(parsedObj.logToProcess(), function() {

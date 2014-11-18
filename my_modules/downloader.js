@@ -14,7 +14,7 @@ var Downloader = function() {
       timeout: 30000
     }, function (error, response, body) {
       if (error) {
-        self.emit('error', {
+        logger.log({
           caller: 'Downloader',
           message: 'error',
           params: {
@@ -24,6 +24,18 @@ var Downloader = function() {
           },
           data: error
         });
+        if (error.code === 'ETIMEDOUT') {
+          if (attempt < 10) {
+            var timeout = attempt * 15000;
+            setTimeout(function permitRetry(){
+              self.download(url, attempt + 1);
+            },timeout);
+          } else {
+            setTimeout(function waitLonger() {
+              self.download(url);
+            },600000);
+          }
+        }
         return;
       } else if (response.statusCode !== 200) {
         self.emit('error', {
