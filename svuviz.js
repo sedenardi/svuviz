@@ -7,8 +7,9 @@ var config = require('./config.json'),
 
 var svu = 'tt0203259';
 var friends = 'tt0108778';
+var seinfeld = 'tt0098904';
 
-var base = new BaseShowScraper(config, friends);
+var base = new BaseShowScraper(config, seinfeld);
 var cast = new EpisodeActorGrabber(config);
 var credits = new ActorCreditsGrabber(config);
 
@@ -20,9 +21,9 @@ base.on('done',function(baseId) {
   });
 });
 
-//base.start();
-//cast.start();
-//credits.start();
+base.start();
+cast.start();
+credits.start(false);
 
 var web = new Web(config);
 web.startServer();
