@@ -284,8 +284,10 @@ var Parser = function() {
           character = obj.$(this).find('a:not(.in_production)').eq(1).text().trim().replace(/\s{2,}/g, ' ');
           characterId = obj.$(this).find('a:not(.in_production)').eq(1).attr('href').split('/')[2];
         } else {
-          var raw = obj.$(this).html().split('<br>')[1].trim();
-          character = obj.$(raw).text().trim().replace(/\s{2,}/g, ' ');
+          try {
+            var raw = obj.$(this).html().split('<br>')[1].trim();
+            character = obj.$(raw).text().trim().replace(/\s{2,}/g, ' ');
+          } catch (e) {}
         }
       }
       if (titleId !== excludedTitleId) {
