@@ -76,6 +76,7 @@ var BaseShowScraper = function(config, baseId, firstSeason) {
           downloadSeason(nextSeason);
         } else {
           self.emit('done', baseId);
+          db.disconnect();
         }
       });
     });

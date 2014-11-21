@@ -67,24 +67,38 @@ var EpisodeActorGrabber = function(config) {
 
   var parseCreditsPage = function(obj) {
     var p = new Parser();
-    p.on('parsed', function(parsedObj) {      
-      db.query(parsedObj.logActorsCmd(),function() {
-        db.query(parsedObj.logCastCmd(),function() {
-          db.query(parsedObj.logToProcess(), function() {
-            db.query(setProcessed(parsedObj.url.titleId), function() {
-              logger.log({
-                caller: 'EpisodeActorGrabber',
-                message: 'MarkProcessed',
-                params: { titleId: parsedObj.url.titleId }
+    p.on('parsed', function(parsedObj) {
+      if (parsedObj.cast.length > 0) {    
+        db.query(parsedObj.logActorsCmd(),function() {
+          db.query(parsedObj.logCastCmd(),function() {
+            db.query(parsedObj.logToProcess(), function() {
+              db.query(setProcessed(parsedObj.url.titleId), function() {
+                logger.log({
+                  caller: 'EpisodeActorGrabber',
+                  message: 'MarkProcessed',
+                  params: { titleId: parsedObj.url.titleId }
+                });
+                done++;
+                if (done === total) {
+                  checkUnprocessed();
+                }
               });
-              done++;
-              if (done === total) {
-                checkUnprocessed();
-              }
             });
           });
         });
-      });
+      } else {
+        db.query(setProcessed(parsedObj.url.titleId), function() {
+          logger.log({
+            caller: 'EpisodeActorGrabber',
+            message: 'MarkProcessed',
+            params: { titleId: parsedObj.url.titleId }
+          });
+          done++;
+          if (done === total) {
+            checkUnprocessed();
+          }
+        });
+      }
     });
 
     p.parseTitleCreditsPage(obj);
