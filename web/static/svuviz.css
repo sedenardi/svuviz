@@ -260,6 +260,10 @@ rect.appearance.common {
 .progress {
   margin-bottom: 0px;
 }
+#progressModal {
+  border-radius: 6px;
+}
+
 input[type="checkbox"] {
   vertical-align: top;
 }
@@ -269,8 +273,24 @@ input[type="checkbox"] {
   color: #ddd;
   border-color: #555;
   border-style: solid;
+  border-radius: 0;
 }
 .close {
   color: #ddd !important;
   opacity: .6 !important;
+}
+
+#introModal .modal-content {
+  background-color: #000;
+}
+.tutorialFrame {
+  height: 431px;
+}
+.tutorialFrame img {
+  width: 100%;
+}
+#creditsFrame {
+  text-align: center;
+  font-size: 18px;
+  padding-top: 120px;
 }

@@ -1,6 +1,12 @@
 $(document).ready(function(){
-  initControls();
-
+  $('#introCarousel').carousel({
+    interval: false
+  });
+  $('#loadingModal').modal({ 
+    backdrop: 'static',
+    keyboard: false,
+    show: true
+  });
   $.ajax({
     url: BaseTitleID + '.json',
     cache: true,
@@ -25,10 +31,6 @@ $(document).ready(function(){
 });
 
 var initControls = function() {
-  $('#introCarousel').carousel({
-    interval: false
-  });
-
   var c = $.cookie('showIntro');
   if (typeof c === 'undefined' || c === 'true') {
     $('#introModal').modal();
@@ -43,12 +45,6 @@ var initControls = function() {
   $('#helpLink').click(function(e) {
     $('#introModal').modal('show');
     return false;
-  });
-
-  $('#loadingModal').modal({ 
-    backdrop: 'static',
-    keyboard: false,
-    show: true
   });
 };
 
@@ -466,6 +462,7 @@ var initGraph = function() {
     .attr('y', function() { return d3.select(this).attr('data-ty'); });
   
   setTimeout(function() {
+    initControls();
     rects.classed('clickable', true);
   }, 3500);
 
