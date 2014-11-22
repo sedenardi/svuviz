@@ -7,6 +7,7 @@ var config = require('./config.json'),
   ActorCreditsGrabber = require('./my_modules/actorCreditsGrabber.js');
 
 var db = new DB(config);
+var day = 1000 * 60 * 60 * 24;
 
 var queueAllActors = function() {
   db.connect('queueUpAllActors', function(){
@@ -28,6 +29,10 @@ var scrapeBaseTitle = function(baseId) {
       message: 'done',
       params: baseId
     });
+
+    setTimeout(function() {
+      scrapeBaseTitle(baseId);
+    }, day*7);
   });
 
   base.start();
@@ -57,3 +62,5 @@ startBaseTitles();
 
 var web = new Web(config);
 web.startServer();
+
+setInterval(queueAllActors, day*3);
