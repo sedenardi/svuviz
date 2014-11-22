@@ -23,24 +23,24 @@ select \
 , a.Character \
 , a.CharacterID \
 , c.Commonalities \
-from svumap.Titles t \
-  inner join svumap.Appearances a \
+from Titles t \
+  inner join Appearances a \
     on a.TitleID = t.TitleID \
   inner join \
   (select \
     a1.ActorID \
   , a1.Name \
   , count(distinct c.ActorID2) as Commonalities \
-  from svumap.Actors a1 \
+  from Actors a1 \
     left outer join \
         (select \
           app1.ActorID as ActorID1 \
         , app2.ActorID as ActorID2 \
-        from svumap.Appearances app1 \
-          inner join svumap.Titles t \
+        from Appearances app1 \
+          inner join Titles t \
             on t.TitleID = app1.TitleID \
             and coalesce(t.ParentTitleID,\'\') <> ? \
-          inner join svumap.Appearances app2 \
+          inner join Appearances app2 \
             on app2.TitleID = app1.TitleID \
             and app2.ActorID <> app1.ActorID \
     where exists \
@@ -167,16 +167,16 @@ from \
     a1.ActorID \
   , a1.Name \
   , count(distinct c.ActorID2) as Commonalities \
-  from svumap.Actors a1 \
+  from Actors a1 \
     left outer join \
         (select \
           app1.ActorID as ActorID1 \
         , app2.ActorID as ActorID2 \
-        from svumap.Appearances app1 \
-          inner join svumap.Titles t \
+        from Appearances app1 \
+          inner join Titles t \
             on t.TitleID = app1.TitleID \
             and coalesce(t.ParentTitleID,\'\') <> ? \
-          inner join svumap.Appearances app2 \
+          inner join Appearances app2 \
             on app2.TitleID = app1.TitleID \
             and app2.ActorID <> app1.ActorID \
     where exists \
@@ -276,16 +276,16 @@ order by Title;';
 // , t.Title \
 // , t.ParentTitleID \
 // , pt.Title as ParentTitle \
-// from svumap.Actors a1 \
-//   inner join svumap.Appearances app1 \
+// from Actors a1 \
+//   inner join Appearances app1 \
 //     on a1.ActorID = app1.ActorID \
-//   inner join svumap.Titles t \
+//   inner join Titles t \
 //     on t.TitleID = app1.TitleID \
-//   left outer join svumap.Titles pt \
+//   left outer join Titles pt \
 //     on pt.TitleID = t.ParentTitleID \
 // where t.ParentTitleID <> ? \
 // and exists \
-//   (Select 1 from svumap.Appearances app2 \
+//   (Select 1 from Appearances app2 \
 //   where app2.TitleID = app1.TitleID \
 //   and app2.ActorID <> app1.ActorID);';
 //     var cmd = {
@@ -342,11 +342,11 @@ order by Title;';
 // , app2.ActorID as ActorID2 \
 // ,  t.TitleID \
 // ,  t.ParentTitleID \
-// from svumap.Appearances app1 \
-//   inner join svumap.Titles t \
+// from Appearances app1 \
+//   inner join Titles t \
 //     on t.TitleID = app1.TitleID \
 //     and t.ParentTitleID <> ? \
-//   inner join svumap.Appearances app2 \
+//   inner join Appearances app2 \
 //     on app2.TitleID = app1.TitleID \
 //     and app2.ActorID <> app1.ActorID;';
 //     var cmd = {
