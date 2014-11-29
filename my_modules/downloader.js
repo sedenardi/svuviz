@@ -26,14 +26,14 @@ var Downloader = function() {
         });
         if (error.code === 'ETIMEDOUT') {
           if (attempt < 10) {
-            var timeout = attempt * 15000;
+            var timeout = attempt * 1000;
             setTimeout(function permitRetry(){
               self.download(url, attempt + 1);
             },timeout);
           } else {
             setTimeout(function waitLonger() {
               self.download(url);
-            },600000);
+            },60000);
           }
         }
         return;
