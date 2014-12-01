@@ -10,6 +10,7 @@ var logger = require('./logger.js'),
 var ActorCreditsGrabber = function(config) {
 
   var self = this;
+  var started = false;
   var db = new DB(config);
   var url = new UrlBuilder();
   var moreLinks = [];
@@ -37,6 +38,7 @@ var ActorCreditsGrabber = function(config) {
   var checkUnprocessed = function() {
     db.query(getUnprocessed(), function(res){
       if (res.length) {
+        started = true;
         logger.log({
           caller: 'ActorCreditsGrabber',
           message: 'Found ' + res.length + ' unprocessed actors'
@@ -52,6 +54,10 @@ var ActorCreditsGrabber = function(config) {
           message: 'No unprocessed, checking again in 30 seconds'
         });
         setTimeout(checkUnprocessed, 30000);
+        if (started) {
+          started = false;
+          self.emit('done');
+        }
       }
     });
   };

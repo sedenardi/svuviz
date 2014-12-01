@@ -114,21 +114,17 @@ var Web = function(config) {
     });
   });
 
-  app.get('/allInfo.json', function (req, res) {
-    if (typeof req.query.BaseTitleID === 'undefined') {
-      res.status(400).json({ error: 'Must specify BaseTitleID.'});
-      return;
-    }
-    var showInfoQuery = queries.showInfoArray(req.query.BaseTitleID);
-    db.query(showInfoQuery.cmd, function(dbResA) {
-      var showInfo = showInfoQuery.process(dbResA[3]).tArray;
-      var filterTitlesQuery = queries.filterTitlesArray(req.query.BaseTitleID);
-      db.query(filterTitlesQuery.cmd, function(dbResB) {
+  this.allInfo = function(thisDB, baseId, callback) {
+    var showInfoQuery = queries.showInfoArray(baseId);
+    thisDB.query(showInfoQuery.cmd, function(dbResA) {
+      var showInfo = showInfoQuery.process(dbResA[4]).tArray;
+      var filterTitlesQuery = queries.filterTitlesArray(baseId);
+      thisDB.query(filterTitlesQuery.cmd, function(dbResB) {
         var filterTitles = filterTitlesQuery.process(dbResB);
-        var colorCutoffsQuery = queries.getColorCutoffs(req.query.BaseTitleID);
-        db.query(colorCutoffsQuery, function(dbResC) {
+        var colorCutoffsQuery = queries.getColorCutoffs(baseId);
+        thisDB.query(colorCutoffsQuery, function(dbResC) {
           var colorCutoffs = [dbResC[8][0].first, dbResC[8][0].second, dbResC[8][0].third];
-          res.json({
+          callback({
             showInfo: showInfo,
             filterTitles: filterTitles,
             colorCutoffs: colorCutoffs
@@ -136,47 +132,17 @@ var Web = function(config) {
         });
       });
     });
+  };
+
+  app.get('/allInfo.json', function (req, res) {
+    if (typeof req.query.BaseTitleID === 'undefined') {
+      res.status(400).json({ error: 'Must specify BaseTitleID.'});
+      return;
+    }
+    self.allInfo(db, req.query.BaseTitleID, function(allInfo) {
+      res.json(allInfo);
+    });
   });
-
-  // app.get('/actorsAndTitles.json', function (req, res) {
-  //   var actorsAndTitles = queries.actorsAndTitles();
-  //   db.query(actorsAndTitles.cmd, function(dbRes) {
-  //     res.json(actorsAndTitles.process(dbRes));
-  //   });
-  // });
-
-  // app.get('/commonalities.json', function (req, res) {
-  //   var commonalities = queries.commonalities();
-  //   db.query(commonalities.cmd, function(dbRes) {
-  //     res.json(commonalities.process(dbRes));
-  //   });
-  // });
-
-  // app.get('/all.json', function (req, res) {
-  //   var showInfo = queries.showInfo();
-  //   db.query(showInfo.cmd, function(dbRes) {
-  //     var infoObj = showInfo.process(dbRes);
-  //     var actorsAndTitles = queries.actorsAndTitles();
-  //     db.query(actorsAndTitles.cmd, function(dbRes2) {
-  //       var aTObj = actorsAndTitles.process(dbRes2);
-  //       var commonalities = queries.commonalities();
-  //       db.query(commonalities.cmd, function(dbRes3) {
-  //         var comObj = commonalities.process(dbRes3);
-  //         var allObj = {
-  //           shows: infoObj.titles,
-  //           actors: aTObj.actors,
-  //           titles: aTObj.titles
-  //         };
-  //         for (var actor in allObj.actors) {
-  //           if (typeof comObj.actors[actor] !== 'undefined') {
-  //             allObj.actors[actor].Commonalities = comObj.actors[actor];
-  //           }
-  //         }
-  //         res.json(allObj);
-  //       });
-  //     });
-  //   });
-  // });
 
   app.get('/getCommonActors.json', function (req, res) {
     if (typeof req.query.BaseTitleID === 'undefined') {

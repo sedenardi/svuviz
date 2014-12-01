@@ -2,6 +2,7 @@ var queries = function() {
 
   var showInfoQuery = function(baseTitleId) {
     var sql = '\
+drop table if exists rActors; \
 create table rActors ( ActorID varchar(10) ); \
 create index ix on rActors (ActorID); \
 insert into rActors \

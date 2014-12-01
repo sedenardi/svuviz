@@ -31,3 +31,5 @@ node_modules
 # Buffers
 *~
 
+# Init files
+web/static/t*.json
