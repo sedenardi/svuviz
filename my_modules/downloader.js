@@ -38,7 +38,7 @@ var Downloader = function() {
         }
         return;
       } else if (response.statusCode !== 200) {
-        self.emit('error', {
+        var logObj = {
           caller: 'Downloader',
           message: 'error',
           params: {
@@ -47,7 +47,9 @@ var Downloader = function() {
             attempt: attempt
           },
           data: response
-        });
+        };
+        logger.log(logObj);
+        self.emit('error', logObj);
         return;
       }
       self.emit('data', {

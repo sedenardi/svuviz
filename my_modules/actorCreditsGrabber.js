@@ -128,11 +128,6 @@ var ActorCreditsGrabber = function(config) {
 
   var markProcessed = function(actorId) {
     db.query(setProcessed(actorId), function() {
-      logger.log({
-        caller: 'ActorCreditsGrabber',
-        message: 'MarkProcessed',
-        params: { actorId: actorId }
-      });
       done++;
       if (done === total) {
         checkUnprocessed();

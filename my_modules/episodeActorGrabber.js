@@ -73,11 +73,6 @@ var EpisodeActorGrabber = function(config) {
           db.query(parsedObj.logCastCmd(),function() {
             db.query(parsedObj.logToProcess(), function() {
               db.query(setProcessed(parsedObj.url.titleId), function() {
-                logger.log({
-                  caller: 'EpisodeActorGrabber',
-                  message: 'MarkProcessed',
-                  params: { titleId: parsedObj.url.titleId }
-                });
                 done++;
                 if (done === total) {
                   checkUnprocessed();
@@ -88,11 +83,6 @@ var EpisodeActorGrabber = function(config) {
         });
       } else {
         db.query(setProcessed(parsedObj.url.titleId), function() {
-          logger.log({
-            caller: 'EpisodeActorGrabber',
-            message: 'MarkProcessed',
-            params: { titleId: parsedObj.url.titleId }
-          });
           done++;
           if (done === total) {
             checkUnprocessed();
