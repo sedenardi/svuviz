@@ -10,7 +10,7 @@ var logger = require('./logger.js'),
 var ActorCreditsGrabber = function(config) {
 
   var self = this;
-  var started = false;
+  var incomingActors = true;
   var db = new DB(config);
   var url = new UrlBuilder();
   var moreLinks = [];
@@ -32,13 +32,21 @@ var ActorCreditsGrabber = function(config) {
   };
   
   this.start = function() {
+    incomingActors = true;
     db.connect('ActorCreditsGrabber', checkUnprocessed);
+  };
+
+  this.setIncomingActorsDone = function() {
+    logger.log({
+      caller: 'ActorCreditsGrabber',
+      message: 'Received IncomingActors done'
+    });
+    incomingActors = false;
   };
   
   var checkUnprocessed = function() {
     db.query(getUnprocessed(), function(res){
       if (res.length) {
-        started = true;
         logger.log({
           caller: 'ActorCreditsGrabber',
           message: 'Found ' + res.length + ' unprocessed actors'
@@ -49,14 +57,14 @@ var ActorCreditsGrabber = function(config) {
           downloadCredits(res[i].ActorID);  
         }
       } else {
-        logger.log({
-          caller: 'ActorCreditsGrabber',
-          message: 'No unprocessed, checking again in 30 seconds'
-        });
-        setTimeout(checkUnprocessed, 30000);
-        if (started) {
-          started = false;
-          self.emit('done');
+        if (incomingActors) {
+          logger.log({
+            caller: 'ActorCreditsGrabber',
+            message: 'No unprocessed, checking again in 60 seconds'
+          });
+          setTimeout(checkUnprocessed, 60000);
+        } else {
+          quit();
         }
       }
     });
@@ -133,6 +141,15 @@ var ActorCreditsGrabber = function(config) {
         checkUnprocessed();
       }
     });
+  };
+
+  var quit = function() {
+    db.disconnect();
+    logger.log({
+      caller: 'ActorCreditsGrabber',
+      message: 'Exiting'
+    });
+    self.emit('done');
   };
 
 };

@@ -13,6 +13,7 @@ var EpisodeActorGrabber = function(config) {
   var db = new DB(config);
   var url = new UrlBuilder();
   var total = 0, done = 0;
+  var baseShowsIncoming = true;
 
   var getUnprocessed = function() {
     return {
@@ -29,7 +30,16 @@ var EpisodeActorGrabber = function(config) {
   };
   
   this.start = function() {
+    baseShowsIncoming = true;
     db.connect('EpisodeActorGrabber', checkUnprocessed);
+  };
+
+  this.setBaseShowsDone = function() { 
+    logger.log({
+      caller: 'EpisodeActorGrabber',
+      message: 'Received BaseShowScraper finished'
+    });
+    baseShowsIncoming = false; 
   };
   
   var checkUnprocessed = function() {
@@ -45,11 +55,15 @@ var EpisodeActorGrabber = function(config) {
           downloadCredits(res[i].TitleID);  
         }
       } else {
-        logger.log({
-          caller: 'EpisodeActorGrabber',
-          message: 'No unprocessed, checking again in 30 seconds'
-        });
-        setTimeout(checkUnprocessed, 30000);
+        if (baseShowsIncoming) {
+          logger.log({
+            caller: 'EpisodeActorGrabber',
+            message: 'No unprocessed, checking again in 60 seconds'
+          });
+          setTimeout(checkUnprocessed, 60000);
+        } else {
+          quit();
+        }
       }
     });
   };
@@ -94,14 +108,14 @@ var EpisodeActorGrabber = function(config) {
     p.parseTitleCreditsPage(obj);
   };
 
-  // var quit = function() {
-  // 	db.disconnect();
-  // 	logger.log({
-  //     caller: 'EpisodeActorGrabber',
-  //     message: 'Exiting'
-  // 	});
-  //   self.emit('done');
-  // };
+  var quit = function() {
+  	db.disconnect();
+  	logger.log({
+      caller: 'EpisodeActorGrabber',
+      message: 'Exiting'
+  	});
+    self.emit('done');
+  };
 
 };
 

@@ -75,11 +75,20 @@ var BaseShowScraper = function(config, baseId, firstSeason) {
           var nextSeason = parsedObj.url.getNextSeason();
           downloadSeason(nextSeason);
         } else {
-          self.emit('done', baseId);
-          db.disconnect();
+          quit();
         }
       });
     });
+  };
+
+  var quit = function() {
+    logger.log({
+      caller: 'BaseShowScraper',
+      message: 'done',
+      params: baseId
+    });
+    db.disconnect();
+    self.emit('done', baseId);
   };
 
 };

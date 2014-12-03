@@ -5,12 +5,17 @@ var config = require('./config.json'),
   BaseShowScraper = require('./my_modules/baseShowScraper.js'),
   EpisodeActorGrabber = require('./my_modules/episodeActorGrabber.js'),
   ActorCreditsGrabber = require('./my_modules/actorCreditsGrabber.js'),
+  queries = require('./my_modules/queries.js'),
   fs = require('fs');
 
 var day = 1000 * 60 * 60 * 24;
+var numBaseShows = 0, doneBaseShows = 0;
 
 var web = new Web(config);
 web.startServer();
+
+var cast = new EpisodeActorGrabber(config);
+var credits = new ActorCreditsGrabber(config);
 
 var queueAllActors = function() {
   var db = new DB(config);
@@ -19,6 +24,7 @@ var queueAllActors = function() {
       sql: 'Insert into ProcessActors(ActorID) select ActorID from Actors a where not exists (select 1 from ProcessActors pa where pa.ActorID = a.ActorID);',
       inserts: []
     }, function() { 
+      credits.start();
       db.disconnect();
     });
   });
@@ -28,15 +34,10 @@ var scrapeBaseTitle = function(baseId) {
   var base = new BaseShowScraper(config, baseId);
   
   base.on('done',function(baseId) {
-    logger.log({
-      caller: 'BaseShowScraper',
-      message: 'done',
-      params: baseId
-    });
-
-    setTimeout(function() {
-      scrapeBaseTitle(baseId);
-    }, day*7);
+    doneBaseShows++;
+    if (doneBaseShows === numBaseShows) {
+      cast.setBaseShowsDone();
+    }
   });
 
   base.start();
@@ -49,6 +50,10 @@ var startBaseTitles = function() {
       sql: 'select * from BaseTitles;',
       inserts: []
     }, function(dbRes) { 
+      numBaseShows = dbRes.length;
+      doneBaseShows = 0;
+      cast.start();
+      credits.start();
       for (var i = 0; i < dbRes.length; i++) {
         scrapeBaseTitle(dbRes[i].BaseTitleID);
       }
@@ -62,7 +67,7 @@ var fetchAllInitFiles = function(baseTitles) {
   db.connect('fetchAllInitFiles', function(){
     var baseId = baseTitles[0].BaseTitleID;
     logger.log({
-      caller: 'BaseShowScraper',
+      caller: 'SVUViz',
       message: 'Fetching all info',
       params: baseId
     });
@@ -71,9 +76,9 @@ var fetchAllInitFiles = function(baseTitles) {
       var s = JSON.stringify(allInfo);
       var filename = process.cwd() + '/web/static/' + baseId + '.json';
       logger.log({
-        caller: 'BaseShowScraper',
+        caller: 'SVUViz',
         message: 'Writing to file',
-        params: { baseId: baseId, filename: filename }
+        params: { filename: filename }
       });
       fs.writeFile(filename, s, function (err) {
         if (err) {
@@ -81,48 +86,41 @@ var fetchAllInitFiles = function(baseTitles) {
           return;
         }
         logger.log({
-          caller: 'BaseShowScraper',
+          caller: 'SVUViz',
           message: 'Done writing to file',
-          params: { baseId: baseId, filename: filename }
+          params: { filename: filename }
         });
         if (baseTitles.length > 1) {
-          fetchAllInitFiles(baseTitles.slice(1));
+          process.nextTick(function(){
+            fetchAllInitFiles(baseTitles.slice(1));
+          });
+          s = null;
         }
       });
     });
   });
 };
 
-var cast = new EpisodeActorGrabber(config);
-var credits = new ActorCreditsGrabber(config);
+cast.on('done', function() {
+  credits.setIncomingActorsDone();
+});
 
 credits.on('done', function() {
   var db = new DB(config);
-  var cmd = {
-    sql: 'select (select count(1) from ProcessActors) as Actors,' +
-      '(select count(1) from ProcessTitles) as Titles;',
-    inserts: []
-  };
-  db.connect('checkForDoneProcessing', function(){
-    db.query(cmd, function(dbRes) {
-      if (dbRes[0].Actors === 0 && dbRes[0].Titles === 0) {
-        db.query({
-          sql: 'select * from BaseTitles;',
-          inserts: []
-        }, function(dbRes2) {
-          db.disconnect();
-          fetchAllInitFiles(dbRes2);
-        });
-      } else {
+  db.connect('FinishProcessing', function(){
+    db.query(queries.buildCommonTitles(), function() {
+      db.query({ sql: 'select * from BaseTitles;', inserts: [] }, function(dbRes2) {
         db.disconnect();
-      }
+        fetchAllInitFiles(dbRes2);
+      });
     });
   });
 });
 
-cast.start();
-credits.start();
-
 startBaseTitles();
+
+setTimeout(function() {
+  scrapeBaseTitle(baseId);
+}, day*7);
 
 setInterval(queueAllActors, day*3);
