@@ -20,10 +20,7 @@ var credits = new ActorCreditsGrabber(config);
 var queueAllActors = function() {
   var db = new DB(config);
   db.connect('queueUpAllActors', function(){
-    db.query({
-      sql: 'Insert into ProcessActors(ActorID) select ActorID from Actors a where not exists (select 1 from ProcessActors pa where pa.ActorID = a.ActorID);',
-      inserts: []
-    }, function() { 
+    db.query({ sql: 'Insert into ProcessActors(ActorID) select ActorID from Actors a where not exists (select 1 from ProcessActors pa where pa.ActorID = a.ActorID);' }, function() { 
       credits.start();
       db.disconnect();
     });
@@ -46,10 +43,7 @@ var scrapeBaseTitle = function(baseId) {
 var startBaseTitles = function() {
   var db = new DB(config);
   db.connect('queueUpAllActors', function(){
-    db.query({
-      sql: 'select * from BaseTitles;',
-      inserts: []
-    }, function(dbRes) { 
+    db.query({ sql: 'select * from BaseTitles;' }, function(dbRes) { 
       numBaseShows = dbRes.length;
       doneBaseShows = 0;
       cast.start();
@@ -109,7 +103,7 @@ credits.on('done', function() {
   var db = new DB(config);
   db.connect('FinishProcessing', function(){
     db.query(queries.buildCommonTitles(), function() {
-      db.query({ sql: 'select * from BaseTitles;', inserts: [] }, function(dbRes2) {
+      db.query({ sql: 'select * from BaseTitles;' }, function(dbRes2) {
         db.disconnect();
         fetchAllInitFiles(dbRes2);
       });

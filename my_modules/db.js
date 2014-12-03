@@ -64,7 +64,9 @@ var DB = function(config){
   /**** FUNCTIONS ****/
   this.query = function(cmd, next, attempt) {
     if (typeof attempt === 'undefined') attempt = 1;
-    var sql = connection.format(cmd.sql, cmd.inserts);
+    var inserts = (typeof cmd.inserts !== 'undefined') ?
+      cmd.inserts : [];
+    var sql = connection.format(cmd.sql, inserts);
     connection.query(sql, function(err, res) {
       if (err) {
         logger.log({

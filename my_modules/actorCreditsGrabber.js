@@ -19,8 +19,7 @@ var ActorCreditsGrabber = function(config) {
 
   var getUnprocessed = function() {
     return {
-      sql: 'select * from ProcessActors limit 30;',
-      inserts: []
+      sql: 'select * from ProcessActors limit 30;'
     };
   };
 

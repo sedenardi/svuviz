@@ -387,8 +387,7 @@ where exists \
     and ap2.ActorID <> ap1.ActorID \
     and exists \
       (select 1 from ParentTitleActors svu \
-      where svu.ActorID = ap2.ActorID)));',
-      inserts: []
+      where svu.ActorID = ap2.ActorID)));'
     };
   };
 
@@ -409,8 +408,7 @@ select bt.*, t.Title as TitleName \
 from BaseTitles bt \
   inner join Titles t \
     on t.TitleID = bt.BaseTitleID \
-order by Sort asc;',
-      inserts: []
+order by Sort asc;'
     };
   };
 

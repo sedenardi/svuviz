@@ -17,8 +17,7 @@ var EpisodeActorGrabber = function(config) {
 
   var getUnprocessed = function() {
     return {
-      sql: 'select * from ProcessTitles limit 10;',
-      inserts: []
+      sql: 'select * from ProcessTitles limit 10;'
     };
   };
 
