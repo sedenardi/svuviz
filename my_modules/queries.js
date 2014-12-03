@@ -392,7 +392,7 @@ where exists \
     };
   };
 
-  this.getTitleActors = function(baseTitleId,titleID) {
+  this.getTitleActors = function(baseTitleId,titleId) {
     var sql = '\
 select ActorID from CommonTitleActors \
 where ParentTitleID = ? and TitleID = ?;';
