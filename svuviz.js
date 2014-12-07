@@ -23,6 +23,9 @@ var queueAllActors = function() {
     db.query({ sql: 'Insert into ProcessActors(ActorID) select ActorID from Actors a where not exists (select 1 from ProcessActors pa where pa.ActorID = a.ActorID);' }, function() { 
       credits.start();
       db.disconnect();
+      setTimeout(function() {
+        credits.setIncomingActorsDone();
+      },120000);
     });
   });
 };
