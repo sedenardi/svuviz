@@ -70,7 +70,6 @@ rect.appearance.common {
 }
 .hoverTooltip p {
   margin: 0;
-  font-family: sans-serif;
   font-size: 12px;
   line-height: 16px;
 }
