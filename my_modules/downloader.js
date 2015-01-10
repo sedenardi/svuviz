@@ -13,7 +13,7 @@ var Downloader = function() {
       url: url.getUrl(),
       timeout: 30000
     }, function (error, response, body) {
-      if (error) {
+      if (error || response.statusCode !== 200) {
         logger.log({
           caller: 'Downloader',
           message: 'error',
@@ -37,20 +37,6 @@ var Downloader = function() {
             },60000);
           }
         }
-        return;
-      } else if (response.statusCode !== 200) {
-        var logObj = {
-          caller: 'Downloader',
-          message: 'error',
-          params: {
-            url: url,
-            uri: url.getUrl(),
-            attempt: attempt
-          },
-          data: response
-        };
-        logger.log(logObj);
-        self.emit('error', logObj);
         return;
       }
       self.emit('data', {

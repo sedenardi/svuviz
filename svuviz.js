@@ -45,7 +45,7 @@ var scrapeBaseTitle = function(baseId) {
 
 var startBaseTitles = function() {
   var db = new DB(config);
-  db.connect('queueUpAllActors', function(){
+  db.connect('startBaseTitles', function(){
     db.query({ sql: 'select * from BaseTitles;' }, function(dbRes) { 
       numBaseShows = dbRes.length;
       doneBaseShows = 0;
