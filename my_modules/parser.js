@@ -92,10 +92,11 @@ var Parser = function() {
           inserts.push(this.episodes[i].synopsis);
           inserts.push(this.episodes[i].airDate);
         }
-        var updateSql = 'update Titles set Season = ?, Number = ?, Synopsis = ?, AirDate = ? where TitleID = ?;';
+        var updateSql = 'update Titles set Title = ?, Season = ?, Number = ?, Synopsis = ?, AirDate = ? where TitleID = ?;';
         var updateArray = [];
         for (var i = 0; i < this.episodes.length; i++) {
           updateArray.push(updateSql);
+          inserts.push(this.episodes[i].title);
           inserts.push(this.episodes[i].season);
           inserts.push(this.episodes[i].episode);
           inserts.push(this.episodes[i].synopsis);
@@ -238,6 +239,9 @@ var Parser = function() {
   this.parseActorCreditsPage = function(rawObj, excludedTitleId) {
     var obj = parse(rawObj);
 
+    var retActorIdArray = obj.$('link[rel="canonical"]').first().attr('href').split('/');
+    var retActorId = retActorIdArray[retActorIdArray.length-2];
+
     var credits = [];
 
     obj.$('.filmo-category-section').first().find('.filmo-row').each(function(i,v){
@@ -303,7 +307,11 @@ var Parser = function() {
     });
     var creditsObj = {
       url: obj.url,
+      retActorId: retActorId,
       credits: credits,
+      actorIsRedirected: function() {
+        return this.url.actorId !== this.retActorId;
+      },
       getMoreLinks: function() {
         var moreLinks = [];
         for (var i = 0; i < this.credits.length; i++) {

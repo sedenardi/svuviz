@@ -29,6 +29,16 @@ var ActorCreditsGrabber = function(config) {
       inserts: [actorId]
     };
   };
+
+  var redirectActor = function(oldActorId, newActorId) {
+    var sql = 'delete from Appearances where ActorID = ?;';
+    sql += 'delete from Actors where ActorID = ?;';
+    sql += 'insert into ProcessActors(ActorID) select ?;';
+    return {
+      sql: sql,
+      inserts: [oldActorId, oldActorId, newActorId]
+    };
+  };
   
   this.start = function() {
     incomingActors = true;
@@ -82,7 +92,14 @@ var ActorCreditsGrabber = function(config) {
 
   var parseCreditsPage = function(obj) {
     var p = new Parser();
-    p.on('parsed', function(parsedObj) {      
+    p.on('parsed', function(parsedObj) {     
+      if (parsedObj.actorIsRedirected()) {
+        db.query(redirectActor(parsedObj.url.actorId, parsedObj.retActorId), function() {
+          markProcessed(parsedObj.url.actorId);
+        });
+        return;
+      }
+
       if (parsedObj.credits.length) {
         db.query(parsedObj.logTitlesCmd(),function() {
           db.query(parsedObj.logAppearancesCmd(),function() {
