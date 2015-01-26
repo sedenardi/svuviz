@@ -116,8 +116,6 @@ credits.on('done', function() {
 
 startBaseTitles();
 
-setTimeout(function() {
-  scrapeBaseTitle(baseId);
-}, day*7);
+setTimeout(startBaseTitles, day*7);
 
 setInterval(queueAllActors, day*3);
