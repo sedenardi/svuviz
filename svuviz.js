@@ -66,7 +66,8 @@ var fetchAllInitFiles = function(baseTitles) {
     logger.log({
       caller: 'SVUViz',
       message: 'Fetching all info',
-      params: baseId
+      params: baseId,
+      minData: baseId
     });
     web.allInfo(db, baseId, function(allInfo) {
       db.disconnect();
@@ -76,7 +77,7 @@ var fetchAllInitFiles = function(baseTitles) {
         caller: 'SVUViz',
         message: 'Writing to file',
         params: { filename: filename },
-        minDate: filename
+        minData: filename
       });
       fs.writeFile(filename, s, function (err) {
         if (err) {
@@ -87,7 +88,7 @@ var fetchAllInitFiles = function(baseTitles) {
           caller: 'SVUViz',
           message: 'Done writing to file',
           params: { filename: filename },
-          minDate: filename
+          minData: filename
         });
         if (baseTitles.length > 1) {
           process.nextTick(function(){

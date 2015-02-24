@@ -74,7 +74,7 @@ var BaseShowScraper = function(config, baseId, firstSeason) {
       caller: 'BaseShowScraper',
       message: 'done',
       params: baseId,
-      minDate: baseId
+      minData: baseId
     });
     db.disconnect();
     self.emit('done', baseId);
