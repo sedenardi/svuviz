@@ -14,28 +14,28 @@ var Downloader = function() {
       timeout: 30000
     }, function (error, response, body) {
       if (error || response.statusCode !== 200) {
-        logger.log({
-          caller: 'Downloader',
-          message: 'error',
-          params: {
-            url: url,
-            uri: url.getUrl(),
-            attempt: attempt
-          },
-          data: error
-        });
-        if (error.code === 'ETIMEDOUT' ||
-          error.code === 'ESOCKETTIMEDOUT') {
-          if (attempt < 10) {
-            var timeout = attempt * 1000;
-            setTimeout(function permitRetry(){
-              self.download(url, attempt + 1);
-            },timeout);
-          } else {
-            setTimeout(function waitLonger() {
-              self.download(url);
-            },60000);
-          }
+        if (error && error.code !== 'ECONNRESET') {
+          logger.log({
+            caller: 'Downloader',
+            message: 'error',
+            params: {
+              url: url,
+              uri: url.getUrl(),
+              attempt: attempt
+            },
+            data: error,
+            minData: 'attempt: ' + attempt
+          });
+        }
+        if (attempt < 10) {
+          var timeout = attempt * 1000;
+          setTimeout(function permitRetry(){
+            self.download(url, attempt + 1);
+          },timeout);
+        } else {
+          setTimeout(function waitLonger() {
+            self.download(url);
+          },10000);
         }
         return;
       }

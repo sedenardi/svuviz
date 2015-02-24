@@ -1,6 +1,12 @@
 var util = require('util');
 
+var minLog = true;
+
 var log = function(logObj, db) {
+  if (minLog) {
+    toConsoleMin(logObj);
+    return;
+  }
   toConsole(logObj);
   if (typeof db !== 'undefined') {
     toDB(logObj, db);
@@ -20,7 +26,15 @@ var formatDate = function(date) {
     pad(date.getHours(),2) + ':' + 
     pad(date.getMinutes(),2) + ':' + 
     pad(date.getSeconds(),2) + ':' + 
-    date.getMilliseconds();
+    pad(date.getMilliseconds(),3);
+};
+
+var toConsoleMin = function(logObj) {
+  var msg = formatDate(new Date());
+  if (logObj.caller) msg += ' - ' + logObj.caller;
+  if (logObj.message) msg += ' - ' + logObj.message;
+  if (logObj.minData) msg += ' - ' + logObj.minData;
+  console.log(msg);
 };
 
 var toConsole = function(logObj) {

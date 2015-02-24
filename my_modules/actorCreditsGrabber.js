@@ -91,37 +91,34 @@ var ActorCreditsGrabber = function(config) {
   };
 
   var parseCreditsPage = function(obj) {
-    var p = new Parser();
-    p.on('parsed', function(parsedObj) {     
-      if (parsedObj.actorIsRedirected()) {
-        db.query(redirectActor(parsedObj.url.actorId, parsedObj.retActorId), function() {
-          markProcessed(parsedObj.url.actorId);
-        });
-        return;
-      }
-
-      if (parsedObj.credits.length) {
-        db.query(parsedObj.logTitlesCmd(),function() {
-          db.query(parsedObj.logAppearancesCmd(),function() {
-            var moreLinks = parsedObj.getMoreLinks();
-            if (moreLinks.length) {
-              var moreLinksObj = {
-                moreLinks: moreLinks,
-                moreLinksDone: 0
-              };
-              for (var i = 0; i < moreLinks.length; i++) {
-                downloadMoreLink(moreLinksObj, i);
-              }
-            } else {
-              markProcessed(parsedObj.url.actorId);
-            }
-          });
-        });
-      } else {
+    var parsedObj = Parser.parseActorCreditsPage(obj);
+    if (parsedObj.actorIsRedirected()) {
+      db.query(redirectActor(parsedObj.url.actorId, parsedObj.retActorId), function() {
         markProcessed(parsedObj.url.actorId);
-      }
-    });
-    p.parseActorCreditsPage(obj, config.baseId);
+      });
+      return;
+    }
+
+    if (parsedObj.credits.length) {
+      db.query(parsedObj.logTitlesCmd(),function() {
+        db.query(parsedObj.logAppearancesCmd(),function() {
+          var moreLinks = parsedObj.getMoreLinks();
+          if (moreLinks.length) {
+            var moreLinksObj = {
+              moreLinks: moreLinks,
+              moreLinksDone: 0
+            };
+            for (var i = 0; i < moreLinks.length; i++) {
+              downloadMoreLink(moreLinksObj, i);
+            }
+          } else {
+            markProcessed(parsedObj.url.actorId);
+          }
+        });
+      });
+    } else {
+      markProcessed(parsedObj.url.actorId);
+    }
   };
 
   var downloadMoreLink = function(moreLinksObj, index) {
@@ -136,18 +133,15 @@ var ActorCreditsGrabber = function(config) {
   };
 
   var parseMoreLink = function(moreLinksObj, obj) {
-    var p = new Parser();
-    p.on('parsed', function(parsedObj) {
-      db.query(parsedObj.logTitlesCmd(),function() {
-        db.query(parsedObj.logAppearancesCmd(),function() {
-          moreLinksObj.moreLinksDone++;
-          if (moreLinksObj.moreLinksDone === moreLinksObj.moreLinks.length) {
-            markProcessed(moreLinksObj.moreLinks[0].actorId);
-          }
-        });
+    var parsedObj = Parser.parseMoreEpisodes(obj);
+    db.query(parsedObj.logTitlesCmd(),function() {
+      db.query(parsedObj.logAppearancesCmd(),function() {
+        moreLinksObj.moreLinksDone++;
+        if (moreLinksObj.moreLinksDone === moreLinksObj.moreLinks.length) {
+          markProcessed(moreLinksObj.moreLinks[0].actorId);
+        }
       });
     });
-    p.parseMoreEpisodes(obj);
   };
 
   var markProcessed = function(actorId) {

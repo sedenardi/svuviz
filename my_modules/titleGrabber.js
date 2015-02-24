@@ -41,25 +41,12 @@ var TitleGrabber = function(config) {
     
     var dl = new Downloader();
     dl.on('data', function(obj) {
-      parseTitlePage(obj);
+      var parsed = Parser.parseTitlePage(obj);
+      var cmd = parsed.logCmd();
+      db.query(cmd,quit);
     });
 
     dl.download(urlObj);
-  };
-
-  var parseTitlePage = function(obj) {
-    var p = new Parser();
-    p.on('parsed', function(obj) {
-      logger.log({
-        caller: 'Parser',
-        message: 'parsed',
-        params: obj.url
-      });
-      
-      var cmd = obj.logCmd();
-      db.query(cmd,quit);
-    });
-    p.parseTitlePage(obj);
   };
 
   var quit = function() {

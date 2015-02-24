@@ -79,32 +79,28 @@ var EpisodeActorGrabber = function(config) {
   };
 
   var parseCreditsPage = function(obj) {
-    var p = new Parser();
-    p.on('parsed', function(parsedObj) {
-      if (parsedObj.cast.length > 0) {    
-        db.query(parsedObj.logActorsCmd(),function() {
-          db.query(parsedObj.logCastCmd(),function() {
-            db.query(parsedObj.logToProcess(), function() {
-              db.query(setProcessed(parsedObj.url.titleId), function() {
-                done++;
-                if (done === total) {
-                  checkUnprocessed();
-                }
-              });
+    var parsedObj = Parser.parseTitleCreditsPage(obj);
+    if (parsedObj.cast.length > 0) {    
+      db.query(parsedObj.logActorsCmd(),function() {
+        db.query(parsedObj.logCastCmd(),function() {
+          db.query(parsedObj.logToProcess(), function() {
+            db.query(setProcessed(parsedObj.url.titleId), function() {
+              done++;
+              if (done === total) {
+                checkUnprocessed();
+              }
             });
           });
         });
-      } else {
-        db.query(setProcessed(parsedObj.url.titleId), function() {
-          done++;
-          if (done === total) {
-            checkUnprocessed();
-          }
-        });
-      }
-    });
-
-    p.parseTitleCreditsPage(obj);
+      });
+    } else {
+      db.query(setProcessed(parsedObj.url.titleId), function() {
+        done++;
+        if (done === total) {
+          checkUnprocessed();
+        }
+      });
+    }
   };
 
   var quit = function() {

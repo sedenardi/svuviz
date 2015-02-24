@@ -1,7 +1,5 @@
 var cheerio = require('cheerio'),
-  moment = require('moment'),
-  util = require('util'),
-  events = require('events');
+  moment = require('moment');
 
 var Parser = function() {
 
@@ -38,7 +36,7 @@ var Parser = function() {
         };
       }
     };
-    self.emit('parsed', titleObj);
+    return titleObj;
   };
 
   this.parseSeasonPage = function(rawObj) {
@@ -126,7 +124,7 @@ var Parser = function() {
         };
       }
     };
-    self.emit('parsed', seasonObj);
+    return seasonObj;
   };
 
   this.parseTitleCreditsPage = function(rawObj) {
@@ -233,7 +231,7 @@ var Parser = function() {
         };
       }
     };
-    self.emit('parsed', castObj);
+    return castObj;
   };
 
   this.parseActorCreditsPage = function(rawObj, excludedTitleId) {
@@ -395,8 +393,7 @@ var Parser = function() {
         };
       }
     };
-
-    self.emit('parsed', creditsObj);
+    return creditsObj;
   };
 
   this.parseMoreEpisodes = function(rawObj) {
@@ -471,11 +468,8 @@ var Parser = function() {
         };
       }
     };
-
-    self.emit('parsed', episodesObj);
+    return episodesObj;
   };
 };
 
-util.inherits(Parser, events.EventEmitter);
-
-module.exports = Parser;
+module.exports = new Parser();

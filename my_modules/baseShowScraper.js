@@ -47,23 +47,11 @@ var BaseShowScraper = function(config, baseId, firstSeason) {
   var downloadSeason = function(seasonUrl) {
     var dl = new Downloader();
     dl.on('data', function(obj) {
-      parseSeason(obj);
+      var parsedObj = Parser.parseSeasonPage(obj);
+      logParsedTitles(parsedObj);
     });
 
     dl.download(seasonUrl);
-  };
-
-  var parseSeason = function(obj) {
-    var p = new Parser();
-    p.on('parsed', function(parsedObj) {
-      logger.log({
-        caller: 'Parser',
-        message: 'parsed',
-        params: parsedObj.url
-      });
-      logParsedTitles(parsedObj);
-    });
-    p.parseSeasonPage(obj);
   };
 
   var logParsedTitles = function(parsedObj) {
@@ -85,7 +73,8 @@ var BaseShowScraper = function(config, baseId, firstSeason) {
     logger.log({
       caller: 'BaseShowScraper',
       message: 'done',
-      params: baseId
+      params: baseId,
+      minDate: baseId
     });
     db.disconnect();
     self.emit('done', baseId);

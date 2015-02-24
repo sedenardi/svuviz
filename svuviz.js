@@ -75,7 +75,8 @@ var fetchAllInitFiles = function(baseTitles) {
       logger.log({
         caller: 'SVUViz',
         message: 'Writing to file',
-        params: { filename: filename }
+        params: { filename: filename },
+        minDate: filename
       });
       fs.writeFile(filename, s, function (err) {
         if (err) {
@@ -85,7 +86,8 @@ var fetchAllInitFiles = function(baseTitles) {
         logger.log({
           caller: 'SVUViz',
           message: 'Done writing to file',
-          params: { filename: filename }
+          params: { filename: filename },
+          minDate: filename
         });
         if (baseTitles.length > 1) {
           process.nextTick(function(){
