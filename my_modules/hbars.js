@@ -11,12 +11,12 @@ var exphbs = function(rootDir, config) {
         return JSON.stringify(obj, null, 2);
       },
       prettyDateRange: function(obj) {
-        return moment(obj.startDate).format('dddd, MMMM Do') + 
+        return moment(obj.startDate).format('dddd, MMMM Do') +
           ' to ' + moment(obj.endDate).format('dddd, MMMM Do');
       }
     },
-    layoutsDir: rootDir + config.web.folders.layouts,
-    partialsDir: rootDir + config.web.folders.partials
+    layoutsDir: rootDir + config.app.folders.layouts,
+    partialsDir: rootDir + config.app.folders.partials
   });
 };
 

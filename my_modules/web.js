@@ -12,7 +12,7 @@ var Web = function(config) {
   var self = this;
   var db = new DB(config);
   var rootDir = process.cwd();
-  
+
   var app = express(),
     hbs = new hbars(rootDir, config);
 
@@ -20,7 +20,7 @@ var Web = function(config) {
 
   app.set('views', rootDir + '/web/views');
   app.set('view engine', 'handlebars');
-  app.use(express.static(rootDir + config.web.folders.static));
+  app.use(express.static(rootDir + config.app.folders.static));
   app.use(compression({
     threshold: 512
   }));
@@ -53,7 +53,7 @@ var Web = function(config) {
         activeDisplayName: activeDisplayName,
         activeTitleName: activeTitleName
       });
-    });    
+    });
   });
 
   app.get('/showInfo.json', function (req, res) {
@@ -153,7 +153,7 @@ var Web = function(config) {
       res.status(400).json({ error: 'Must specify ActorID.'});
       return;
     }
-    var query = queries.getCommonActors(req.query.BaseTitleID, 
+    var query = queries.getCommonActors(req.query.BaseTitleID,
       req.query.ActorID, req.query.TitleID);
     db.query(query, function(dbRes) {
       var array = [];
@@ -211,16 +211,16 @@ var Web = function(config) {
 
   this.startServer = function() {
     db.connect('Express', function webDB() {
-      app.listen(config.web.port, function webStarted() {
+      app.listen(config.app.port, function webStarted() {
         logger.log({
           caller: 'Express',
           message: 'Web server started',
-          params: { port: config.web.port }
+          params: { port: config.app.port }
         });
       });
     });
   };
-  
+
 };
 
 util.inherits(Web, events.EventEmitter);

@@ -1,4 +1,4 @@
-var config = require('./config.json'),
+var config = require('./config'),
   logger = require('./my_modules/logger.js'),
   Web = require('./my_modules/web.js'),
   DB = require('./my_modules/db.js'),
@@ -20,7 +20,7 @@ var credits = new ActorCreditsGrabber(config);
 var queueAllActors = function() {
   var db = new DB(config);
   db.connect('queueUpAllActors', function(){
-    db.query({ sql: 'Insert into ProcessActors(ActorID) select ActorID from Actors a where not exists (select 1 from ProcessActors pa where pa.ActorID = a.ActorID);' }, function() { 
+    db.query({ sql: 'Insert into ProcessActors(ActorID) select ActorID from Actors a where not exists (select 1 from ProcessActors pa where pa.ActorID = a.ActorID);' }, function() {
       credits.start();
       db.disconnect();
       setTimeout(function() {
@@ -32,7 +32,7 @@ var queueAllActors = function() {
 
 var scrapeBaseTitle = function(baseId) {
   var base = new BaseShowScraper(config, baseId);
-  
+
   base.on('done',function(baseId) {
     doneBaseShows++;
     if (doneBaseShows === numBaseShows) {
@@ -46,7 +46,7 @@ var scrapeBaseTitle = function(baseId) {
 var startBaseTitles = function() {
   var db = new DB(config);
   db.connect('startBaseTitles', function(){
-    db.query({ sql: 'select * from BaseTitles;' }, function(dbRes) { 
+    db.query({ sql: 'select * from BaseTitles;' }, function(dbRes) {
       numBaseShows = dbRes.length;
       doneBaseShows = 0;
       cast.start();
