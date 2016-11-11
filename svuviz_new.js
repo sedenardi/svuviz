@@ -2,14 +2,15 @@
 
 var config = require('./config');
 var db = require('./lib/db')(config.mysql);
-var BaseShowScraper = require('./scrapers/BaseShowScraper');
+var BaseShow = require('./scrapers/BaseShow');
+var EpisodeActor = require('./scrapers/EpisodeActor');
 var _ = require('lodash');
 
 var startBaseTitles = function() {
   var baseShowSql = 'select * from BaseTitles;';
   return db.query([baseShowSql]).then((shows) => {
     var baseShows = _.map(shows, (show) => {
-      var baseShow = new BaseShowScraper(db, show.BaseTitleID);
+      var baseShow = new BaseShow(db, show.BaseTitleID);
       return baseShow.start();
     });
     return Promise.all(baseShows);
@@ -17,5 +18,10 @@ var startBaseTitles = function() {
 };
 
 startBaseTitles().then(() => {
+  var episodeActor = new EpisodeActor(db);
+  return episodeActor.start();
+}).then(() => {
   return db.end();
+}).catch((err) => {
+  console.log(err);
 });

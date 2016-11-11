@@ -6,29 +6,29 @@ var dl = require('../lib/downloader')();
 var parser = require('../lib/parser');
 var logger = require('../lib/logger');
 
-var BaseShowScraper = function(db, baseId) {
+var BaseShow = function(db, baseId) {
   this.db = db;
   this.baseId = baseId;
 };
 
-BaseShowScraper.prototype.lastSeasonQuery = function() {
+BaseShow.prototype.lastSeasonQuery = function() {
   return [
     'select coalesce(max(Season),1) as LastSeason from Titles t where ParentTitleID = ?;',
     [this.baseId]
   ];
 };
 
-BaseShowScraper.prototype.download = function(seasonUrl) {
+BaseShow.prototype.download = function(seasonUrl) {
   logger.log({
-    caller: 'BaseShowScraper',
+    caller: 'BaseShow',
     message: `Scraping ${this.baseId} Season`,
     minData: seasonUrl.season
   });
   return dl.get(seasonUrl).then((body) => {
     var parsedObj = parser.parseSeasonPage({ url: seasonUrl, data: body });
-    var logCmd = this.db.query(parsedObj.logCmd());
-    var processCmd = this.db.query(parsedObj.logToProcess());
-    return Promise.all([logCmd, processCmd]).then(() => {
+    var logAction = this.db.query(parsedObj.logCmd());
+    var processAction = this.db.query(parsedObj.logToProcess());
+    return Promise.all([logAction, processAction]).then(() => {
       if (parsedObj.url.hasNextSeason()) {
         var nextSeason = parsedObj.url.getNextSeason();
         return this.download(nextSeason);
@@ -39,7 +39,7 @@ BaseShowScraper.prototype.download = function(seasonUrl) {
   });
 };
 
-BaseShowScraper.prototype.start = function() {
+BaseShow.prototype.start = function() {
   var baseGrabber = new TitleGrabber(this.db, this.baseId);
   return baseGrabber.start().then(() => {
     return this.db.query(this.lastSeasonQuery());
@@ -50,4 +50,4 @@ BaseShowScraper.prototype.start = function() {
   });
 };
 
-module.exports = BaseShowScraper;
+module.exports = BaseShow;
