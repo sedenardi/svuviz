@@ -1,12 +1,12 @@
 var config = require('./config'),
-  logger = require('./my_modules/logger.js'),
-  Web = require('./my_modules/web.js'),
-  DB = require('./my_modules/db.js'),
-  BaseShowScraper = require('./my_modules/baseShowScraper.js'),
-  EpisodeActorGrabber = require('./my_modules/episodeActorGrabber.js'),
-  ActorCreditsGrabber = require('./my_modules/actorCreditsGrabber.js'),
-  queries = require('./my_modules/queries.js'),
-  fs = require('fs');
+    logger = require('./my_modules/logger.js'),
+    Web = require('./my_modules/web.js'),
+    DB = require('./my_modules/db.js'),
+    BaseShowScraper = require('./my_modules/baseShowScraper.js'),
+    EpisodeActorGrabber = require('./my_modules/episodeActorGrabber.js'),
+    ActorCreditsGrabber = require('./my_modules/actorCreditsGrabber.js'),
+    queries = require('./my_modules/queries.js'),
+    fs = require('fs');
 
 var day = 1000 * 60 * 60 * 24;
 var numBaseShows = 0, doneBaseShows = 0;
@@ -25,7 +25,7 @@ var queueAllActors = function() {
       db.disconnect();
       setTimeout(function() {
         credits.setIncomingActorsDone();
-      },120000);
+      }, 120000);
     });
   });
 };
@@ -33,7 +33,7 @@ var queueAllActors = function() {
 var scrapeBaseTitle = function(baseId) {
   var base = new BaseShowScraper(config, baseId);
 
-  base.on('done',function(baseId) {
+  base.on('done', function(baseId) {
     doneBaseShows++;
     if (doneBaseShows === numBaseShows) {
       cast.setBaseShowsDone();

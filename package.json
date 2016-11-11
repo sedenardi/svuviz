@@ -10,6 +10,7 @@
     "url": "https://github.com/sedenardi/svuviz.git"
   },
   "dependencies": {
+    "bluebird": "^3.4.6",
     "cheerio": "^0.22.0",
     "compression": "^1.6.2",
     "express": "^4.14.0",
@@ -18,9 +19,11 @@
     "lodash": "^4.16.6",
     "moment": "^2.15.2",
     "mysql": "^2.11.1",
-    "request": "^2.76.0"
+    "request": "^2.76.0",
+    "uuid": "^2.0.3"
   },
-  "engines": {
-    "node": ">=0.10"
+  "devDependencies": {
+    "babel-eslint": "^7.1.0",
+    "eslint": "^3.9.1"
   }
 }
