@@ -6,7 +6,7 @@ var parser = require('../lib/parser');
 var logger = require('../lib/logger');
 var _ = require('lodash');
 
-var unprocessedQuery = ['select * from ProcessTitles limit 10;'];
+var unprocessedQuery = ['select * from ProcessTitles limit 20;'];
 var setProcessedQuery = function(titleId) {
   return [
     'delete from ProcessTitles where TitleID = ?;',
@@ -23,15 +23,15 @@ EpisodeActor.prototype.downloadCredits = function(titleId) {
   return dl.get(urlObj).then((body) => {
     var parsedObj = parser.parseTitleCreditsPage({ url: urlObj, data: body });
     if (!parsedObj.cast.length) {
-      return this.db.query(setProcessedQuery(titleId));
+      return Promise.resolve();
     }
     return this.db.query(parsedObj.logActorsCmd()).then(() => {
       return this.db.query(parsedObj.logCastCmd());
     }).then(() => {
       return this.db.query(parsedObj.logToProcess());
-    }).then(() => {
-      return this.db.query(setProcessedQuery(titleId));
     });
+  }).then(() => {
+    return this.db.query(setProcessedQuery(titleId));
   });
 };
 

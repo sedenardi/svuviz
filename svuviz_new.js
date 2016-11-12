@@ -4,6 +4,7 @@ var config = require('./config');
 var db = require('./lib/db')(config.mysql);
 var BaseShow = require('./scrapers/BaseShow');
 var EpisodeActor = require('./scrapers/EpisodeActor');
+var ActorCredits = require('./scrapers/ActorCredits');
 var _ = require('lodash');
 
 var startBaseTitles = function() {
@@ -20,6 +21,9 @@ var startBaseTitles = function() {
 startBaseTitles().then(() => {
   var episodeActor = new EpisodeActor(db);
   return episodeActor.start();
+}).then(() => {
+  var actorCredits = new ActorCredits(db);
+  return actorCredits.start();
 }).then(() => {
   return db.end();
 }).catch((err) => {
