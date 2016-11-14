@@ -10,12 +10,12 @@ var queries = require('./lib/queries')(db);
 var logger = require('./lib/logger');
 var _ = require('lodash');
 
-var generateFlatFile = function(baseTitleId) {
+var generateFlatFile = function(baseTitleId, seqNo) {
   logger.log({
     caller: 'SVUViz',
     message: `Fetching all info - ${baseTitleId}`
   });
-  return queries.baseTitleInfo(baseTitleId).then((baseTitleInfo) => {
+  return queries.baseTitleInfo(baseTitleId, seqNo).then((baseTitleInfo) => {
     var filename = `${process.cwd()}/web/static/${baseTitleId}.json`;
     logger.log({
       caller: 'SVUViz',
@@ -50,8 +50,8 @@ var run = function() {
       });
       return queries.buildCommonTitles();
     }).then(() => {
-      var files = _.map(shows, (show) => {
-        return generateFlatFile(show.BaseTitleID);
+      var files = _.map(shows, (show, i) => {
+        return generateFlatFile(show.BaseTitleID, i);
       });
       return Promise.all(files);
     });
@@ -59,6 +59,7 @@ var run = function() {
     return db.end();
   }).catch((err) => {
     console.log(err);
+    return db.end();
   });
 };
 

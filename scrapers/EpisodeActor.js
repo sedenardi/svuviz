@@ -6,7 +6,7 @@ var parser = require('../lib/parser');
 var logger = require('../lib/logger');
 var _ = require('lodash');
 
-var unprocessedQuery = ['select * from ProcessTitles limit 20;'];
+var unprocessedQuery = ['select * from ProcessTitles limit 50;'];
 var setProcessedQuery = function(titleId) {
   return [
     'delete from ProcessTitles where TitleID = ?;',
