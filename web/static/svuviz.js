@@ -2,13 +2,13 @@ $(document).ready(function(){
   $('#introCarousel').carousel({
     interval: false
   });
-  $('#loadingModal').modal({ 
+  $('#loadingModal').modal({
     backdrop: 'static',
     keyboard: false,
     show: true
   });
   $.ajax({
-    url: BaseTitleID + '.json',
+    url: 'static/' + BaseTitleID + '.json',
     cache: true,
     success: function(data) {
       prepareDataset(data);
@@ -21,8 +21,8 @@ $(document).ready(function(){
   // jQuery -> D3 click (from http://stackoverflow.com/a/11180172/3311526)
   jQuery.fn.d3Click = function () {
     this.each(function (i, e) {
-      var evt = document.createEvent("MouseEvents");
-      evt.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+      var evt = document.createEvent('MouseEvents');
+      evt.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
       e.dispatchEvent(evt);
     });
   };
@@ -130,7 +130,7 @@ var setupTitleSearch = function() {
     local: dataset.searchTitles
   });
   searchTitleSource.initialize();
-  
+
   $('#titleSearch').typeahead({
     highlight: true
   }, {
@@ -139,9 +139,9 @@ var setupTitleSearch = function() {
     displayKey: 'Title',
     templates: {
       suggestion: function(d) {
-        return '<div class="searchActorName">' + 
-          d.Title + '</div>' + 
-          '<div class="searchCharacterName">' + 
+        return '<div class="searchActorName">' +
+          d.Title + '</div>' +
+          '<div class="searchCharacterName">' +
           (d.TV ? 'TV Show' : '') + '</div>';
       }
     }
@@ -172,12 +172,12 @@ var setupTitleSearch = function() {
   }).change(function() {
     var newVal = $(this).val();
     if (newVal !== $('#titleSearch').attr('data-title')) {
-      $('#titleSearch').attr('data-titleid','');
-      $('#titleSearch').attr('data-title','');
+      $('#titleSearch').attr('data-titleid', '');
+      $('#titleSearch').attr('data-title', '');
       $('#titleSearch').typeahead('val', '');
       searchTitleActors = [];
       d3.selectAll('.appearance')
-        .style('display','inline');
+        .style('display', 'inline');
       clearBothActors();
     }
   });
@@ -214,7 +214,7 @@ var setupActorSearch = function() {
     queryTokenizer: Bloodhound.tokenizers.whitespace,
     limit: 10,
     local: dataset.searchArray
-  });   
+  });
   searchActorSource.initialize();
   var typeaheadOptions = {
     opt1: {
@@ -226,9 +226,9 @@ var setupActorSearch = function() {
       displayKey: 'ActorName',
       templates: {
         suggestion: function(d) {
-          return '<div class="searchActorName">' + 
-            d.ActorName + '</div>' + 
-            '<div class="searchCharacterName">' + 
+          return '<div class="searchActorName">' +
+            d.ActorName + '</div>' +
+            '<div class="searchCharacterName">' +
             d.Characters + '</div>';
         }
       }
@@ -237,25 +237,25 @@ var setupActorSearch = function() {
 
   $('#searchInput1').typeahead(typeaheadOptions.opt1, typeaheadOptions.opt2)
     .bind('typeahead:selected', function (obj, datum){
-      appearanceClicked(datum,'actor1');
-  }).change(function() {
-    var newVal = $(this).val();
-    if (newVal !== $(this).parents('.actor').attr('data-actorname')) {
-      clearActor('actor1');
-      setCommonalities();
-    }
-  });
+      appearanceClicked(datum, 'actor1');
+    }).change(function() {
+      var newVal = $(this).val();
+      if (newVal !== $(this).parents('.actor').attr('data-actorname')) {
+        clearActor('actor1');
+        setCommonalities();
+      }
+    });
 
   $('#searchInput2').typeahead(typeaheadOptions.opt1, typeaheadOptions.opt2)
     .bind('typeahead:selected', function (obj, datum){
-      appearanceClicked(datum,'actor2');
-  }).change(function() {
-    var newVal = $(this).val();
-    if (newVal !== $(this).parents('.actor').attr('data-actorname')) {
-      clearActor('actor2');
-      setCommonalities();
-    }
-  });
+      appearanceClicked(datum, 'actor2');
+    }).change(function() {
+      var newVal = $(this).val();
+      if (newVal !== $(this).parents('.actor').attr('data-actorname')) {
+        clearActor('actor2');
+        setCommonalities();
+      }
+    });
 };
 
 var setActorSearch = function(selector, actorId, actorName) {
@@ -282,14 +282,13 @@ var changeSearch = function(actors) {
     for (var i = 0; i < searchTitleActors.length; i++) {
       searchData.push(dataset.searchObj[searchTitleActors[i]]);
     }
-  }
-  else {
+  }  else {
     searchData = dataset.searchArray.slice(0);
   }
   searchActorSource.clear();
   searchActorSource.local = searchData;
   searchActorSource.initialize(true);
-}
+};
 
 var initGraph = function() {
   margin = 8;
@@ -309,7 +308,7 @@ var initGraph = function() {
     })])
     .range([episodeHeight, height]);
 
-  yHeight = (height - episodeHeight) / 
+  yHeight = (height - episodeHeight) /
     d3.max(dataset.showTitles, function(d) {
       return d.Appearances.length;
     });
@@ -322,13 +321,13 @@ var initGraph = function() {
   var getAppearanceColor = function(d) {
     var i = d.Season % palette.length;
     if (d.Commonalities < colorCutoffs[0]) {
-      return palette[i]['200']; 
+      return palette[i]['200'];
     } else if (d.Commonalities < colorCutoffs[1]) {
-      return palette[i]['400']; 
+      return palette[i]['400'];
     } else if (d.Commonalities < colorCutoffs[2]) {
-      return palette[i]['700']; 
+      return palette[i]['700'];
     } else {
-      return palette[i]['900']; 
+      return palette[i]['900'];
     }
   };
 
@@ -348,7 +347,7 @@ var initGraph = function() {
     .attr('xlink:href', function(d) {
       return 'http://www.imdb.com/title/' + d.TitleID + '/';
     })
-    .attr('target','_blank')
+    .attr('target', '_blank')
     .append('rect')
     .classed('episode', true)
     .attr('x', function(d, i) { return xScale(i); })
@@ -358,26 +357,26 @@ var initGraph = function() {
     .attr('width', xScale.rangeBand())
     .style('fill', getEpisodeColor)
     .on('mouseenter', function(d) {
-      d3.select(this).classed('hover',true);
+      d3.select(this).classed('hover', true);
 
-      var xPosition = parseFloat(d3.select(this).attr("x")) + 25;
+      var xPosition = parseFloat(d3.select(this).attr('x')) + 25;
       if (xPosition > (width - 200)) xPosition -= (200 + 50);
       var yPosition = heightOffset + height - episodeHeight - 110;
       //Update the tooltip position and value
-      var tooltip = d3.select("#episodeTooltip")
-        .style("left", xPosition + "px")
-        .style("top", yPosition + "px");
-      tooltip.select("#title").text(d.Title);
-      tooltip.select("#season").text(d.Season);
-      tooltip.select("#number").text(d.Number);
-      tooltip.select("#synopsis").text(d.Synopsis);
-      tooltip.select("#airdate").text(moment(d.AirDate).format("MMMM Do, YYYY"));
+      var tooltip = d3.select('#episodeTooltip')
+        .style('left', xPosition + 'px')
+        .style('top', yPosition + 'px');
+      tooltip.select('#title').text(d.Title);
+      tooltip.select('#season').text(d.Season);
+      tooltip.select('#number').text(d.Number);
+      tooltip.select('#synopsis').text(d.Synopsis);
+      tooltip.select('#airdate').text(moment(d.AirDate).format('MMMM Do, YYYY'));
       //Show the tooltip
-      tooltip.classed("hidden", false);
+      tooltip.classed('hidden', false);
     })
     .on('mouseleave', function(d) {
-      d3.select(this).classed('hover',false);
-      d3.select("#episodeTooltip").classed("hidden", true);
+      d3.select(this).classed('hover', false);
+      d3.select('#episodeTooltip').classed('hidden', true);
     });
 
   var appGroups = svg.append('g')
@@ -412,9 +411,9 @@ var initGraph = function() {
             .classed('common', false);
         }
 
-        var xPosition = parseFloat(d3.select(this).attr("x")) + 30;
+        var xPosition = parseFloat(d3.select(this).attr('x')) + 30;
         if (xPosition > (width - 200)) xPosition -= (200 + 50);
-        var yPosition = parseFloat(d3.select(this).attr("y")) + 50 - heightOffset;
+        var yPosition = parseFloat(d3.select(this).attr('y')) + 50 - heightOffset;
         if (yPosition < 100) yPosition = 100;
         //Update the tooltip position and value
         var tooltip = d3.select('#appearanceTooltip');
@@ -437,7 +436,7 @@ var initGraph = function() {
 
       if (d3.select(this).classed('wasCommon')) {
         actors.classed('wasCommon', false);
-        if (!(d3.select(this).classed('active1') || 
+        if (!(d3.select(this).classed('active1') ||
           d3.select(this).classed('active2'))) {
           actors.classed('common', true);
         }
@@ -455,12 +454,12 @@ var initGraph = function() {
   var seqDelay = Math.ceil(3000/dataset.showTitles.length);
   d3.selectAll('rect')
     .transition()
-    .delay(function(d,i) {
+    .delay(function(d, i) {
       return d.seq * seqDelay;
     })
     .duration(500)
     .attr('y', function() { return d3.select(this).attr('data-ty'); });
-  
+
   setTimeout(function() {
     initControls();
     rects.classed('clickable', true);
@@ -527,12 +526,12 @@ var appearanceClicked = function(d, actorNum) {
     actors.classed('active2', true);
   }
   setCommonalities();
-  actors.each(function(d,i) {
+  actors.each(function(d, i) {
     var x = parseFloat(d3.select(this).attr('x')),
         y = parseFloat(d3.select(this).attr('y')),
         w = parseFloat(d3.select(this).attr('width')),
         h = parseFloat(d3.select(this).attr('height')),
-        cls = d3.select(this).classed('active1') ? 
+        cls = d3.select(this).classed('active1') ?
           'active1' : 'active2';
     var clicked = d3.select('svg')
       .append('rect')
@@ -561,8 +560,8 @@ var setCommonalities = function() {
   $('#commonControl').hide();
   if (both) {
     d3.selectAll('.appearance')
-      .filter(function(d,i) { return !d3.select(this).classed('clicked'); })
-      .style('display',function(d){
+      .filter(function(d, i) { return !d3.select(this).classed('clicked'); })
+      .style('display', function(d){
         if (d.ActorID === d3.select('#actor1').attr('data-actorid') ||
           d.ActorID === d3.select('#actor2').attr('data-actorid')) {
           return 'inline';
@@ -574,8 +573,8 @@ var setCommonalities = function() {
     $('#commonControl').show();
   } else if (neither) {
     var appearances = d3.selectAll('.appearance')
-      .filter(function(d,i) { return !d3.select(this).classed('clicked'); });
-    if (searchTitleActors.length) {      
+      .filter(function(d, i) { return !d3.select(this).classed('clicked'); });
+    if (searchTitleActors.length) {
       var mapped = d3.set(searchTitleActors);
       appearances.style('display', function(d) {
         if (mapped.has(d.ActorID)) {
@@ -585,7 +584,7 @@ var setCommonalities = function() {
         }
       });
     } else {
-      appearances.style('display','inline');
+      appearances.style('display', 'inline');
     }
     changeSearch();
   } else {
@@ -594,11 +593,11 @@ var setCommonalities = function() {
 };
 
 var getCommonActors = function() {
-  var actorId = d3.select('#actor1').classed('active') ? 
+  var actorId = d3.select('#actor1').classed('active') ?
     d3.select('#actor1').attr('data-actorid') :
     d3.select('#actor2').attr('data-actorid');
   var data = { BaseTitleID: BaseTitleID, ActorID: actorId };
-  if ($('#titleSearch').attr('data-titleid').length) { 
+  if ($('#titleSearch').attr('data-titleid').length) {
     data.TitleID = $('#titleSearch').attr('data-titleid');
   }
   $.ajax({
@@ -609,7 +608,7 @@ var getCommonActors = function() {
     success: function(response) {
       var mapped = d3.set(response);
       d3.selectAll('.appearance')
-        .filter(function(d,i) { return !d3.select(this).classed('clicked'); })
+        .filter(function(d, i) { return !d3.select(this).classed('clicked'); })
         .style('display', function(d) {
           if (mapped.has(d.ActorID) || d.ActorID === actorId) {
             return 'inline';
@@ -684,7 +683,7 @@ var registerHelpers = function() {
   });
   Handlebars.registerHelper('actorLink', function(id, name) {
     if (typeof id === 'string') {
-      return '<a class="actorLink" href="http://www.imdb.com/name/' + 
+      return '<a class="actorLink" href="http://www.imdb.com/name/' +
         id + '/" target="_blank">' + name + '</a>';
     } else {
       return name;
@@ -692,7 +691,7 @@ var registerHelpers = function() {
   });
   Handlebars.registerHelper('characterLink', function(id, name) {
     if (typeof id === 'string') {
-      return '<a class="characterLink" href="http://www.imdb.com/character/' + 
+      return '<a class="characterLink" href="http://www.imdb.com/character/' +
         id + '/" target="_blank">' + name + '</a>';
     } else {
       return name;
@@ -700,7 +699,7 @@ var registerHelpers = function() {
   });
   Handlebars.registerHelper('titleLink', function(id, name) {
     if (typeof id === 'string') {
-      return '<a class="titleLink" href="http://www.imdb.com/title/' + 
+      return '<a class="titleLink" href="http://www.imdb.com/title/' +
         id + '/" target="_blank">' + name + '</a>';
     } else {
       return name;
@@ -721,7 +720,7 @@ var registerHelpers = function() {
 
 var getActorLink = function(id, name) {
   if (typeof id === 'string') {
-    return '<a class="actorLink" href="http://www.imdb.com/name/' + 
+    return '<a class="actorLink" href="http://www.imdb.com/name/' +
       id + '/" target="_blank">' + name + '</a>';
   } else {
     return name;
@@ -730,7 +729,7 @@ var getActorLink = function(id, name) {
 
 var getTitleLink = function(id, name) {
   if (typeof id === 'string') {
-    return '<a class="titleLink" href="http://www.imdb.com/title/' + 
+    return '<a class="titleLink" href="http://www.imdb.com/title/' +
       id + '/" target="_blank">' + name + '</a>';
   } else {
     return name;
@@ -739,7 +738,7 @@ var getTitleLink = function(id, name) {
 
 var getCharacterLink = function(id, name) {
   if (typeof id === 'string') {
-    return '<a class="characterLink" href="http://www.imdb.com/character/' + 
+    return '<a class="characterLink" href="http://www.imdb.com/character/' +
       id + '/" target="_blank">' + name + '</a>';
   } else {
     return name;
