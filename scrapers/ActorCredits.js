@@ -6,7 +6,7 @@ var parser = require('../lib/parser');
 var logger = require('../lib/logger');
 var _ = require('lodash');
 
-var unprocessedQuery = ['select * from ProcessActors limit 50;'];
+var unprocessedQuery = ['select * from ProcessActors limit 100;'];
 var setProcessedQuery = function(actorId) {
   return [
     'delete from ProcessActors where ActorID = ?;',

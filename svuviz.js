@@ -1,124 +1,69 @@
-var config = require('./config'),
-    logger = require('./my_modules/logger.js'),
-    Web = require('./my_modules/web.js'),
-    DB = require('./my_modules/db.js'),
-    BaseShowScraper = require('./my_modules/baseShowScraper.js'),
-    EpisodeActorGrabber = require('./my_modules/episodeActorGrabber.js'),
-    ActorCreditsGrabber = require('./my_modules/actorCreditsGrabber.js'),
-    queries = require('./my_modules/queries.js'),
-    fs = require('fs');
+'use strict';
 
-var day = 1000 * 60 * 60 * 24;
-var numBaseShows = 0, doneBaseShows = 0;
+var config = require('./config');
+var db = require('./lib/db')(config.mysql);
+var BaseShow = require('./scrapers/BaseShow');
+var EpisodeActor = require('./scrapers/EpisodeActor');
+var ActorCredits = require('./scrapers/ActorCredits');
+var fs = require('bluebird').promisifyAll(require('fs'));
+var queries = require('./lib/queries')(db);
+var logger = require('./lib/logger');
+var _ = require('lodash');
 
-var web = new Web(config);
-web.startServer();
-
-var cast = new EpisodeActorGrabber(config);
-var credits = new ActorCreditsGrabber(config);
-
-var queueAllActors = function() {
-  var db = new DB(config);
-  db.connect('queueUpAllActors', function(){
-    db.query({ sql: 'Insert into ProcessActors(ActorID) select ActorID from Actors a where not exists (select 1 from ProcessActors pa where pa.ActorID = a.ActorID);' }, function() {
-      credits.start();
-      db.disconnect();
-      setTimeout(function() {
-        credits.setIncomingActorsDone();
-      }, 120000);
-    });
+var generateFlatFile = function(baseTitleId, seqNo) {
+  logger.log({
+    caller: 'SVUViz',
+    message: `Fetching all info - ${baseTitleId}`
   });
-};
-
-var scrapeBaseTitle = function(baseId) {
-  var base = new BaseShowScraper(config, baseId);
-
-  base.on('done', function(baseId) {
-    doneBaseShows++;
-    if (doneBaseShows === numBaseShows) {
-      cast.setBaseShowsDone();
-    }
-  });
-
-  base.start();
-};
-
-var startBaseTitles = function() {
-  var db = new DB(config);
-  db.connect('startBaseTitles', function(){
-    db.query({ sql: 'select * from BaseTitles;' }, function(dbRes) {
-      numBaseShows = dbRes.length;
-      doneBaseShows = 0;
-      cast.start();
-      credits.start();
-      for (var i = 0; i < dbRes.length; i++) {
-        scrapeBaseTitle(dbRes[i].BaseTitleID);
-      }
-      db.disconnect();
-    });
-  });
-};
-
-var fetchAllInitFiles = function(baseTitles) {
-  var db = new DB(config);
-  db.connect('fetchAllInitFiles', function(){
-    var baseId = baseTitles[0].BaseTitleID;
+  return queries.baseTitleInfo(baseTitleId, seqNo).then((baseTitleInfo) => {
+    var filename = `${process.cwd()}/web/static/${baseTitleId}.json`;
     logger.log({
       caller: 'SVUViz',
-      message: 'Fetching all info',
-      params: baseId,
-      minData: baseId
+      message: `Writing file - ${baseTitleId}`
     });
-    web.allInfo(db, baseId, function(allInfo) {
-      db.disconnect();
-      var s = JSON.stringify(allInfo);
-      var filename = process.cwd() + '/web/static/' + baseId + '.json';
-      logger.log({
-        caller: 'SVUViz',
-        message: 'Writing to file',
-        params: { filename: filename },
-        minData: filename
-      });
-      fs.writeFile(filename, s, function (err) {
-        if (err) {
-          console.log(err);
-          return;
-        }
-        logger.log({
-          caller: 'SVUViz',
-          message: 'Done writing to file',
-          params: { filename: filename },
-          minData: filename
-        });
-        if (baseTitles.length > 1) {
-          process.nextTick(function(){
-            fetchAllInitFiles(baseTitles.slice(1));
-          });
-          s = null;
-        }
-      });
+    return fs.writeFileAsync(filename, JSON.stringify(baseTitleInfo));
+  }).then(() => {
+    logger.log({
+      caller: 'SVUViz',
+      message: `Finished writing file - ${baseTitleId}`,
+      params: baseTitleId
     });
   });
 };
 
-cast.on('done', function() {
-  credits.setIncomingActorsDone();
-});
-
-credits.on('done', function() {
-  var db = new DB(config);
-  db.connect('FinishProcessing', function(){
-    db.query(queries.buildCommonTitles(), function() {
-      db.query({ sql: 'select * from BaseTitles;' }, function(dbRes2) {
-        db.disconnect();
-        fetchAllInitFiles(dbRes2);
-      });
+var runBaseTitles = function() {
+  return queries.baseTitles().then((shows) => {
+    var baseShows = _.map(shows, (show) => {
+      var baseShow = new BaseShow(db, show.BaseTitleID);
+      return baseShow.start();
     });
+    return Promise.all(baseShows).then(() => {
+      var episodeActor = new EpisodeActor(db);
+      return episodeActor.start();
+    }).then(() => {
+      var actorCredits = new ActorCredits(db);
+      return actorCredits.start();
+    }).then(() => {
+      logger.log({
+        caller: 'SVUViz',
+        message: 'Building common titles'
+      });
+      return queries.buildCommonTitles();
+    }).then(() => {
+      var files = _.map(shows, (show, i) => {
+        return generateFlatFile(show.BaseTitleID, i);
+      });
+      return Promise.all(files);
+    });
+  }).then(() => {
+    return db.end();
+  }).catch((err) => {
+    console.log(err);
+    return db.end();
   });
-});
+};
 
-startBaseTitles();
-
-setTimeout(startBaseTitles, day*7);
-
-setInterval(queueAllActors, day*3);
+module.exports = {
+  runBaseTitles: runBaseTitles,
+  queueAllActors: queries.queueAllActors
+};
