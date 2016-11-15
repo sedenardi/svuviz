@@ -65,5 +65,10 @@ var runBaseTitles = function() {
 
 module.exports = {
   runBaseTitles: runBaseTitles,
-  queueAllActors: queries.queueAllActors
+  queueAllActors: queries.queueAllActors,
+  handler: (event, context) => {
+    runBaseTitles().then(() => {
+      context.done();
+    });
+  }
 };
