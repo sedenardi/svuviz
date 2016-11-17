@@ -16,7 +16,7 @@ module.exports = {
     scrapers.queueAllActors().then(() => { context.done(); });
   },
   web: (event, context) => {
-    var path = (event.resourcePath || 'index').replace('/', '');
+    var path = (event.resourcePath || '').replace('/', '') || 'index';
     if (endpoints[path]) {
       endpoints[path](event.query).then((res) => {
         context.done(null, res);
