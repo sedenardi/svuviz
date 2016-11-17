@@ -1,12 +1,10 @@
 'use strict';
 
-var path = require('path');
 var Hbars = require('./lib/hbars');
 var _ = require('lodash');
 
-module.exports = function(config, queries) {
-  var viewsDir = path.resolve(__dirname, config.app.folders.views);
-  var hbars = Hbars(viewsDir);
+module.exports = function(config, queries, S3) {
+  var hbars = Hbars({ S3: S3 });
 
   return {
     index: (params) => {

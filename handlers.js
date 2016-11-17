@@ -3,9 +3,10 @@
 var config = require('./config');
 var db = require('./lib/db')(config.mysql);
 var queries = require('./lib/queries')(db);
+var S3 = require('./lib/s3')(config);
 
-var scrapers = require('./scrapers')(config, db, queries);
-var endpoints = require('./endpoints')(config, queries);
+var scrapers = require('./scrapers')(config, db, queries, S3);
+var endpoints = require('./endpoints')(config, queries, S3);
 
 module.exports = {
   runBaseTitles: (event, context) => {

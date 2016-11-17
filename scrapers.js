@@ -7,8 +7,7 @@ var logger = require('./lib/logger');
 var fs = require('bluebird').promisifyAll(require('fs'));
 var _ = require('lodash');
 
-module.exports = function(config, db, queries) {
-  var S3 = require('./lib/s3')(config);
+module.exports = function(db, queries, S3) {
 
   var generateFlatFile = function(baseTitleId, seqNo, local) {
     logger.log({
