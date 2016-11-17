@@ -10,6 +10,7 @@ $(document).ready(function(){
   $.ajax({
     url: 'static/' + BaseTitleID + '.json',
     cache: true,
+    dataType: 'json',
     success: function(data) {
       prepareDataset(data);
       initGraph();
@@ -150,9 +151,10 @@ var setupTitleSearch = function() {
     $('#titleSearch').attr('data-title', datum.Title);
     $('#loadingModal').modal('show');
     $.ajax({
-      url: 'getTitleActors.json',
+      url: 'TitleActors',
       data: { BaseTitleID: BaseTitleID, TitleID: datum.TitleID },
       cache: true,
+      dataType: 'json',
       success: function(response) {
         searchTitleActors = response;
         var mapped = d3.set(searchTitleActors);
@@ -484,7 +486,7 @@ var initGraph = function() {
         }
         d3.select('#actorModalBody').html('Loading...');
         $.ajax({
-          url: 'getActorInfo.json',
+          url: 'ActorInfo',
           type: 'GET',
           dataType: 'json',
           data: { ActorID: actorId },
@@ -601,7 +603,7 @@ var getCommonActors = function() {
     data.TitleID = $('#titleSearch').attr('data-titleid');
   }
   $.ajax({
-    url: 'getCommonActors.json',
+    url: 'CommonActors',
     type: 'GET',
     dataType: 'json',
     data: data,
@@ -628,7 +630,7 @@ var showCommonModal = function() {
   var actorName2 = d3.select('#actor2').attr('data-actorname');
   d3.select('#commonModalBody').html('Loading...');
   $.ajax({
-    url: 'getCommonTitles.json',
+    url: 'CommonTitles',
     type: 'GET',
     dataType: 'json',
     data: { ActorID1: actorId1, ActorID2: actorId2 },
