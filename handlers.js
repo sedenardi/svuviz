@@ -5,7 +5,7 @@ var db = require('./lib/db')(config.mysql);
 var queries = require('./lib/queries')(db);
 var S3 = require('./lib/s3')(config);
 
-var scrapers = require('./scrapers')(config, db, queries, S3);
+var scrapers = require('./scrapers')(db, queries, S3);
 var endpoints = require('./endpoints')(config, queries, S3);
 
 module.exports = {
