@@ -78,20 +78,20 @@ ActorCredits.prototype.downloadCredits = function(actorId) {
   });
 };
 
-ActorCredits.prototype.start = function() {
+ActorCredits.prototype.start = function(recursed) {
   return this.db.query(unprocessedQuery).then((res) => {
     logger.log({
       caller: 'ActorCredits',
       message: `Found ${res.length} unprocessed actors`
     });
     if (!res.length) {
-      return Promise.resolve();
+      return Promise.resolve(recursed);
     }
     var actions = _.map(res, (r) => {
       return this.downloadCredits(r.ActorID);
     });
     return Promise.all(actions).then(() => {
-      return this.start();
+      return this.start(true);
     });
   });
 };

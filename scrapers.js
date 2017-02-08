@@ -63,17 +63,24 @@ module.exports = function(db, queries, S3) {
   var runActorCredits = function(local) {
     return queries.baseTitles().then((shows) => {
       var actorCredits = new ActorCredits(db);
-      return actorCredits.start().then(() => {
+      return actorCredits.start().then((changed) => {
+        if (!changed) {
+          logger.log({
+            caller: 'SVUViz',
+            message: 'No actors to scrape.'
+          });
+          return Promise.resolve();
+        }
         logger.log({
           caller: 'SVUViz',
           message: 'Building common titles'
         });
-        return queries.buildCommonTitles();
-      }).then(() => {
-        var files = _.map(shows, (show, i) => {
-          return generateFlatFile(show.BaseTitleID, i, local);
+        return queries.buildCommonTitles().then(() => {
+          var files = _.map(shows, (show, i) => {
+            return generateFlatFile(show.BaseTitleID, i, local);
+          });
+          return Promise.all(files);
         });
-        return Promise.all(files);
       });
     }).then(() => {
       if (local) {
