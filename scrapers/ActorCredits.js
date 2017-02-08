@@ -21,6 +21,14 @@ var redirectActorQuery = function(oldActorId, newActorId) {
   return [sql, [oldActorId, oldActorId, newActorId]];
 };
 
+var deleteActorQuery = function(actorId) {
+  var sql = `
+  delete from ProcessActors where ActorID = ?;
+  delete from Appearances where ActorID = ?;
+  delete from Actors where ActorID = ?;`;
+  return [sql, [actorId, actorId, actorId]];
+};
+
 var ActorCredits = function(db) {
   this.db = db;
 };
@@ -61,6 +69,12 @@ ActorCredits.prototype.downloadCredits = function(actorId) {
     });
   }).then(() => {
     return this.db.query(setProcessedQuery(actorId));
+  }).catch((err) => {
+    if (err.err === 404) {
+      return this.db.query(deleteActorQuery(actorId));
+    } else {
+      throw err;
+    }
   });
 };
 
