@@ -4,3 +4,4 @@ config.js
 web/static/t*.json
 database/fresh*
 test.js
+*.zip

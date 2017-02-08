@@ -12,6 +12,9 @@ module.exports = {
   runBaseTitles: (event, context) => {
     scrapers.runBaseTitles().then(() => { context.done(); });
   },
+  runActorCredits: (event, context) => {
+    scrapers.runActorCredits().then(() => { context.done(); });
+  },
   queueAllActors: (event, context) => {
     scrapers.queueAllActors().then(() => { context.done(); });
   },

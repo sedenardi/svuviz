@@ -8,7 +8,6 @@ var fs = require('bluebird').promisifyAll(require('fs'));
 var _ = require('lodash');
 
 module.exports = function(db, queries, S3) {
-
   var generateFlatFile = function(baseTitleId, seqNo, local) {
     logger.log({
       caller: 'SVUViz',
@@ -34,6 +33,7 @@ module.exports = function(db, queries, S3) {
       });
     });
   };
+
   var runBaseTitles = function(local) {
     return queries.baseTitles().then((shows) => {
       var baseShows = _.map(shows, (show) => {
@@ -43,10 +43,27 @@ module.exports = function(db, queries, S3) {
       return Promise.all(baseShows).then(() => {
         var episodeActor = new EpisodeActor(db);
         return episodeActor.start();
-      }).then(() => {
-        var actorCredits = new ActorCredits(db);
-        return actorCredits.start();
-      }).then(() => {
+      });
+    }).then(() => {
+      if (local) {
+        return db.end();
+      } else {
+        return Promise.resolve();
+      }
+    }).catch((err) => {
+      console.log(err);
+      if (local) {
+        return db.end();
+      } else {
+        return Promise.resolve();
+      }
+    });
+  };
+
+  var runActorCredits = function(local) {
+    return queries.baseTitles().then((shows) => {
+      var actorCredits = new ActorCredits(db);
+      return actorCredits.start().then(() => {
         logger.log({
           caller: 'SVUViz',
           message: 'Building common titles'
@@ -73,8 +90,10 @@ module.exports = function(db, queries, S3) {
       }
     });
   };
+
   return {
     runBaseTitles: runBaseTitles,
+    runActorCredits: runActorCredits,
     queueAllActors: queries.queueAllActors
   };
 };
